@@ -411,6 +411,37 @@
       results.frequency.push({ column: c, items: items });
     });
 
+    // 散点数据（取第一对相关变量，最多 300 点，用于散点图）
+    if (results.correlations.length) {
+      var pa = results.correlations[0].a, pb = results.correlations[0].b;
+      var pts = [];
+      recs.forEach(function (r) {
+        var x = r[pa], y = r[pb];
+        if (x != null && y != null) pts.push([round(x, 3), round(y, 3)]);
+      });
+      if (pts.length > 300) {
+        var step = pts.length / 300, sampled = [];
+        for (var i2 = 0; i2 < pts.length; i2 += step) sampled.push(pts[Math.floor(i2)]);
+        pts = sampled;
+      }
+      results.scatter = { x: pa, y: pb, points: pts, r: results.correlations[0].r };
+    }
+
+    // 相关系数矩阵（针对描述统计涉及的数值变量）
+    var names = results.descriptives.map(function (d) { return d.column; });
+    if (names.length >= 2) {
+      var matrix = names.map(function (a) {
+        return names.map(function (b) {
+          if (a === b) return 1;
+          var xs = recs.map(function (r) { return r[a]; });
+          var ys = recs.map(function (r) { return r[b]; });
+          var res2 = pearson(xs, ys);
+          return res2.r == null ? null : round(res2.r, 2);
+        });
+      });
+      results.corrMatrix = { names: names, matrix: matrix };
+    }
+
     return results;
   }
 
@@ -418,56 +449,65 @@
   function insights(results, prof) {
     var out = [];
     var smallCols = [];
+    var midCv = [], lowCv = [];
     function add(level, title, text, metric) { out.push({ level: level, title: title, text: text, metric: metric || null }); }
 
     results.descriptives.forEach(function (d) {
       if (d.missing && d.n) {
         var rate = d.missing / (d.n + d.missing);
-        if (rate > 0.05) add('high', d.column + ' 缺失较多', '缺失 ' + d.missing + ' 个（占 ' + (Math.round(rate * 1000) / 10) + '%），均值与方差可能偏移，建议补充数据后再下结论。', d.column);
+        if (rate > 0.05) {
+          add('high', d.column + '：缺失比例偏高', '该变量缺失 ' + d.missing + ' 个观测（占 ' + (Math.round(rate * 1000) / 10) + '%），均值与方差估计可能产生偏移；建议补充数据或说明缺失机制后再作推断。', d.column);
+        }
       }
       if (d.cv != null && d.cv >= 0.3) {
-        add('high', d.column + ' 离散程度偏高', '变异系数 CV = ' + d.cv + '（≥ 0.3），说明个体差异大、分布分散；' + d.column + ' 的高低差距明显，可能存在"两极分化"，建议按群体拆开看，而不是只看平均值。', d.column);
+        add('high', d.column + '：离散程度较高', '变异系数 CV = ' + d.cv + '，超过 0.30 的经验阈值；观测值离散程度较高，提示样本中可能存在异质性群体或双峰分布。建议引入分层变量作进一步比较，不宜仅以总体均值概括。', d.column);
       } else if (d.cv != null && d.cv >= 0.2) {
-        add('mid', d.column + ' 差异较大', '变异系数 CV = ' + d.cv + '（0.2–0.3），个体之间已有明显差距；若用于考核、排名或分组，建议结合分组统计看差异来源。', d.column);
+        midCv.push(d.column + '（CV ' + d.cv + '）');
       } else if (d.cv != null && d.cv < 0.05) {
-        add('mid', d.column + ' 过于集中', '变异系数 CV = ' + d.cv + '，几乎所有样本都挤在均值附近，区分度低；如果目标是评价或考核，这个指标可能拉不开差距。', d.column);
-      }
-      if (d.skew != null && Math.abs(d.skew) > 1) {
-        add('mid', d.column + ' 分布明显偏斜', '偏度 = ' + d.skew + '，' + (d.skew > 0 ? '右侧有长尾（少数高值拉高均值）' : '左侧有长尾（少数低值拉低均值）') + '；此时中位数（' + d.median + '）比均值（' + d.mean + '）更能代表典型水平。', d.column);
+        lowCv.push(d.column + '（CV ' + d.cv + '）');
       }
       if (d.mean != null && d.median != null && Math.abs(d.median) > 1e-9) {
         var gap = Math.abs(d.mean - d.median) / Math.abs(d.median);
         if (gap > 0.2) {
-          add('high', d.column + ' 的均值被极端值拉动', '均值 ' + d.mean + ' 与中位数 ' + d.median + ' 相差 ' +
-            (Math.round(gap * 1000) / 10) + '%（超过 20%），说明分布被少数极端值拉偏；汇报时应以中位数为准，或先核对异常记录。', d.column);
+          add('high', d.column + '：均值受极端值影响', '均值 ' + d.mean + ' 与中位数 ' + d.median + ' 相差 ' + (Math.round(gap * 1000) / 10) + '%，超过 20%；分布受少数极端观测牵引，宜以中位数度量典型水平，并核对原始记录。', d.column);
         }
       }
-      if (d.outlierRate != null && d.outlierRate > 0.05) {
-        add('mid', d.column + ' 存在异常值', '按 1.5×IQR 规则检出 ' + d.outliers + ' 个异常值（占 ' + (Math.round(d.outlierRate * 1000) / 10) + '%），建议先核对原始记录再决定保留或剔除。', d.column);
+      if (d.skew != null && Math.abs(d.skew) > 1) {
+        add('mid', d.column + '：分布显著偏斜', '偏度 = ' + d.skew + '，分布呈' + (d.skew > 0 ? '右偏（少数高值拉高均值）' : '左偏（少数低值拉低均值）') + '；中位数（' + d.median + '）较均值（' + d.mean + '）更能代表典型水平。', d.column);
       }
-      if (d.n < 30) smallCols.push(d.column + '（' + d.n + '）');
+      if (d.outlierRate != null && d.outlierRate > 0.05) {
+        add('mid', d.column + '：存在离群值', '按 1.5×IQR 准则检出 ' + d.outliers + ' 个离群观测（占 ' + (Math.round(d.outlierRate * 1000) / 10) + '%）；建议先核对原始记录，再确定保留或剔除，并在报告中说明处理方式。', d.column);
+      }
+      if (d.n < 30) smallCols.push(d.column + '（n=' + d.n + '）');
     });
 
+    if (midCv.length) {
+      add('mid', '部分变量差异中等：' + midCv.length + ' 个', midCv.join('、') + ' 的变异系数处于 0.20–0.30 区间；个体间差异较为明显，报告均值时应同时给出标准差或置信区间。', null);
+    }
+    if (lowCv.length) {
+      add('mid', '部分变量离散偏低：' + lowCv.length + ' 个', lowCv.join('、') + ' 的变异系数低于 0.05，观测值高度集中于均值附近，区分度有限；若用于评价，辨别力不足。', null);
+    }
     if (smallCols.length) {
-      add('mid', '样本量偏小：' + smallCols.length + ' 个指标',
-        smallCols.join('、') + ' 的有效样本都少于 30，均值与方差的估计不够稳定；结论只宜作为参考，若要下结论建议扩大样本。', null);
+      add('mid', '样本量不足：' + smallCols.length + ' 个变量', smallCols.join('、') + ' 的有效样本量均小于 30，均值与方差的抽样误差较大；结论属探索性，如需推断总体应扩大样本。', null);
     }
 
     if (results.groups && results.groups.effect != null) {
       var g = results.groups;
       if (Math.abs(g.effect) >= 0.8) {
-        add('high', g.by + ' 各组之间差异明显', '按「' + g.by + '」分组后，「' + g.metric + '」最高组与最低组均值相差 ' + g.spread + '，效应量 d = ' + g.effect + '（≥0.8 属大效应）；建议分群制定策略，不要用总体均值代替各组情况。', g.metric);
+        add('high', g.by + '：组间差异显著', '按「' + g.by + '」分组，「' + g.metric + '」最高组与最低组均值相差 ' + g.spread + '，效应量 d = ' + g.effect.toFixed(2) + '（≥0.80 属大效应）；组间差异具有实质意义，建议分群描述与决策，不以总体均值替代各组水平。', g.metric);
       } else if (Math.abs(g.effect) >= 0.5) {
-        add('mid', g.by + ' 各组存在中等差异', '组间均值差 ' + g.spread + '，效应量 d = ' + g.effect + '，值得进一步比较各组内部结构。', g.metric);
+        add('mid', g.by + '：组间存在中等差异', '组间均值差 ' + g.spread + '，效应量 d = ' + g.effect.toFixed(2) + '（0.50–0.80）；建议进一步考察各组内部结构。', g.metric);
+      } else {
+        add('low', g.by + '：组间差异有限', '效应量 d = ' + g.effect.toFixed(2) + '（<0.50）；各组均值接近，按该变量分层的必要性有限。', g.metric);
       }
     }
 
     results.correlations.forEach(function (c) {
       var ar = Math.abs(c.r);
       if (ar >= 0.6) {
-        add('high', c.a + ' 与 ' + c.b + ' 强相关', 'Pearson r = ' + c.r + '（n = ' + c.n + '），' + (c.significant ? '在统计上显著。' : '但样本量较小，显著性有限。') + '注意：相关不等于因果，不能据此断定谁导致谁。', c.a);
+        add('high', c.a + ' 与 ' + c.b + '：强相关', 'Pearson r = ' + c.r + '（n = ' + c.n + '），' + (c.significant ? '在 α = 0.05 水平上具有统计显著性。' : '受样本量限制，显著性不足。') + '相关关系不等同于因果关系，解释时应排除共同驱动因素。', c.a);
       } else if (ar >= 0.3) {
-        add('mid', c.a + ' 与 ' + c.b + ' 中度相关', 'Pearson r = ' + c.r + '（n = ' + c.n + '），有一定同向变化趋势，可作为进一步分析的线索。', c.a);
+        add('mid', c.a + ' 与 ' + c.b + '：中等相关', 'Pearson r = ' + c.r + '（n = ' + c.n + '），存在同向变化趋势，可作为进一步建模的候选变量。', c.a);
       }
     });
 
@@ -475,12 +515,12 @@
       if (!f.items.length) return;
       var top = f.items[0];
       if (top.pct > 0.8 && f.items.length > 1) {
-        add('mid', f.column + ' 分布高度集中', '「' + top.value + '」占 ' + (Math.round(top.pct * 1000) / 10) + '%，其他类别样本很少，分组比较时小样本组的结论要谨慎。', f.column);
+        add('mid', f.column + '：分布高度集中', '「' + top.value + '」占 ' + (Math.round(top.pct * 1000) / 10) + '%，其余类别样本稀少；分组比较时小样本组的估计不稳定，宜谨慎解读。', f.column);
       }
     });
 
     if (!out.length) {
-      add('low', '未发现明显统计异常', '各项指标都在常见范围内，可直接进入业务解读。');
+      add('low', '未发现显著异常', '各项指标均处于常见范围内，可直接进入业务解读。');
     }
     return out;
   }
@@ -495,7 +535,7 @@
     }).join('\n');
     var sample = (sampleRows || []).slice(0, 4).map(function (r) { return JSON.stringify(r); }).join('\n');
     return [
-      '你是一名经管数据分析顾问。请先看懂下面这份数据，再决定"应该输出哪些统计结果"。',
+      '你是统计分析顾问。请先判读数据的变量结构，再确定本次分析应输出哪些统计量。',
       '只输出 JSON，不要解释文字，不要用 markdown 代码块。',
       '',
       '【文件】' + (fileName || '未命名') + '，共 ' + prof.n + ' 行 × ' + prof.m + ' 列',
@@ -521,8 +561,8 @@
       '',
       '【硬性约束】',
       '- 列名必须与上面完全一致，不得翻译、不得新增。',
-      '- 结合"经管分析"的常识选择：通常 2–4 个核心指标做描述统计，1 个分组比较，1–3 对相关。',
-      '- 每项都要能回答一个业务问题（如"哪个班差距最大""什么因素与业绩相关"）。',
+      '- 依据统计惯例选择：通常 2–4 个核心指标作描述统计，1 个分组比较，1–3 对相关分析。',
+      '- 每一项都应回答一个明确的分析问题（如组间差异来源、变量间关联强度）。',
       '- 只输出一个可被 JSON.parse 解析的对象。'
     ].join('\n');
   }
@@ -542,9 +582,9 @@
       '',
       '【输出要求】',
       '1. 先给一句总体结论（不超过 40 字）。',
-      '2. 再给 3–5 条建议，每条按"【发现】—【依据】—【建议】"三段写，每条不超过 120 字。',
+      '2. 再给 3–5 条结论，每条按"【发现】—【依据】—【建议】"三段撰写，每条不超过 120 字。',
       '3. 每条"依据"必须引用上面的具体数字（如均值 71.2、CV 0.33、r = 0.62）。',
-      '4. 语气面向非技术管理者，不要说"显著提升"这类没有依据的话。',
+      '4. 表述应严谨：不使用"显著提升"等缺乏检验依据的措辞；涉及差异时注明统计量。',
       '5. 结尾固定一句：以上结论基于所提供数据的统计结果，供决策参考，不替代业务判断。',
       '',
       '【硬性约束】',
