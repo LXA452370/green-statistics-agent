@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 经管数据统计分析 v3.0 单文件版 -->
+<!-- 经管数据统计分析 v4.0 单文件版 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -7,8 +7,9 @@
 <title>经管数据统计分析</title>
 <style>
 /* =========================================================
-   经管数据统计分析 · v3
-   配色：暖纸底 + 墨绿主色 + 黄铜点缀（低饱和、克制）
+   经管数据统计分析 · v4
+   配色沿用第三版：暖纸 + 墨绿 + 黄铜（不再调整）
+   v4 版式调整：加大字号、减少留白、双栏铺满
    ========================================================= */
 :root{
   --paper:#F7F4EE;
@@ -35,7 +36,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--paper); color:var(--ink); font:14.5px/1.66 var(--sans);
+  background:var(--paper); color:var(--ink); font:16px/1.7 var(--sans);
   -webkit-font-smoothing:antialiased;
 }
 h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:600;letter-spacing:.01em}
@@ -47,203 +48,180 @@ table{font-variant-numeric:tabular-nums}
 /* ---------- 顶栏 ---------- */
 .topbar{
   position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:18px;
-  padding:12px 28px; background:rgba(247,244,238,.96); border-bottom:1px solid var(--line);
+  padding:14px 36px; background:rgba(247,244,238,.96); border-bottom:1px solid var(--line);
   backdrop-filter:blur(6px);
 }
-.brand{display:flex; align-items:center; gap:12px}
+.brand{display:flex; align-items:center; gap:13px}
 .mark{
-  width:34px;height:34px;border-radius:6px;display:grid;place-items:center;
-  background:var(--pine); color:#F3EEE3; font-size:15px; font-weight:600; letter-spacing:.06em;
+  width:38px;height:38px;border-radius:7px;display:grid;place-items:center;
+  background:var(--pine); color:#F3EEE3; font-size:16px; font-weight:600; letter-spacing:.06em;
 }
-.brand-text h1{font-size:15.5px;letter-spacing:.04em}
-.brand-text p{margin:0;font-size:11.5px;color:var(--muted);letter-spacing:.08em}
+.brand-text h1{font-size:17px;letter-spacing:.04em}
+.brand-text p{margin:0;font-size:12.5px;color:var(--muted);letter-spacing:.08em}
 .top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
 .status{
-  font-size:11.5px;letter-spacing:.04em;color:var(--muted);
-  border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);
+  font-size:12.5px;letter-spacing:.04em;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--surface);
 }
 .status.on{color:var(--pine);border-color:#C9D8CF;background:var(--pine-l)}
 
 /* ---------- 布局 ---------- */
-main{max-width:1120px;margin:0 auto;padding:20px 24px 56px}
-.steps{display:flex;gap:0;list-style:none;padding:0;margin:2px 0 20px;border-bottom:1px solid var(--line)}
+main{max-width:1280px;margin:0 auto;padding:22px 32px 64px}
+.steps{display:flex;gap:0;list-style:none;padding:0;margin:0 0 22px;border-bottom:1px solid var(--line)}
 .steps li{
-  display:flex;align-items:center;gap:8px;padding:9px 2px 11px;margin-right:34px;
-  font-size:13px;color:var(--muted);letter-spacing:.04em;border-bottom:2px solid transparent;
+  display:flex;align-items:center;gap:9px;padding:10px 2px 12px;margin-right:40px;
+  font-size:14px;color:var(--muted);letter-spacing:.04em;border-bottom:2px solid transparent;
 }
-.steps li b{font-weight:600;color:var(--brass);font-size:12.5px}
+.steps li b{font-weight:600;color:var(--brass);font-size:13.5px}
 .steps li.active{color:var(--pine);border-bottom-color:var(--pine)}
 .steps li.active b{color:var(--pine)}
 .steps li.done b{color:var(--sage)}
 
 .card{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow);
+  padding:22px 24px;margin-bottom:18px;box-shadow:var(--shadow);
 }
-.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
-.card-head h2{font-size:19px}
-.card-head h3{font-size:15px}
-.hint{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-head h2{font-size:21px}
+.card-head h3{font-size:17px}
+.hint{font-size:12.5px;color:var(--muted);letter-spacing:.04em}
 .muted{color:var(--muted)}
-.fineprint{font-size:11.5px;line-height:1.65;color:var(--muted);margin-top:10px}
-.lead{color:var(--ink-2);max-width:760px}
+.fineprint{font-size:12.5px;line-height:1.7;color:var(--muted);margin-top:12px}
+.lead{color:var(--ink-2);max-width:820px;font-size:16px}
 
-/* ---------- 导入 ---------- */
-.import-card{max-width:860px;margin:8px auto 16px;padding:24px 26px}
+/* ---------- 导入：双栏铺满 ---------- */
+.import-grid{display:grid;grid-template-columns:1.35fr .95fr;gap:18px;align-items:stretch}
+.drop-card{display:flex;flex-direction:column;margin-bottom:0;padding:26px 28px}
+.sample-card{margin-bottom:0;display:flex;flex-direction:column}
 .dropzone{
-  border:1px dashed #C9BFAC;border-radius:var(--radius);background:#FCFAF6;
-  display:flex;flex-direction:column;align-items:center;gap:4px;padding:26px 16px;
-  text-align:center;cursor:pointer;transition:.15s;margin-top:14px;
+  flex:1;min-height:300px;border:1px dashed #C9BFAC;border-radius:10px;background:#FCFAF6;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  text-align:center;cursor:pointer;transition:.15s;margin-top:16px;
 }
 .dropzone:hover,.dropzone.hover{border-color:var(--pine);background:var(--pine-l)}
-.dz-icon{width:34px;height:34px;border-radius:50%;border:1px solid #D6CBB7;display:grid;place-items:center;color:var(--brass);font-size:18px}
-.dz-title{margin:4px 0 0;font-size:14px;font-weight:600}
-.dz-sub{margin:0 0 6px;font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.dz-icon{width:44px;height:44px;border-radius:50%;border:1px solid #D6CBB7;display:grid;place-items:center;color:var(--brass);font-size:22px}
+.dz-title{margin:8px 0 0;font-size:16px;font-weight:600}
+.dz-sub{margin:0 0 10px;font-size:13px;color:var(--muted);letter-spacing:.03em}
 
-.sample-block{margin-top:20px}
-.block-label{font-size:11.5px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
-.sample-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sample-list{display:flex;flex-direction:column;gap:8px;flex:1}
 .sample{
-  display:flex;align-items:flex-start;gap:10px;text-align:left;cursor:pointer;
-  background:#FCFAF6;border:1px solid var(--line);border-radius:8px;padding:9px 11px;transition:.15s;
+  display:flex;align-items:flex-start;gap:11px;text-align:left;cursor:pointer;
+  background:#FCFAF6;border:1px solid var(--line);border-radius:8px;padding:11px 13px;transition:.15s;
 }
 .sample:hover{border-color:var(--pine);background:var(--pine-l)}
-.sample .no{font-size:11.5px;color:var(--brass);font-weight:600;min-width:16px}
-.sample .nm{font-size:13px;font-weight:600}
-.sample .ds{font-size:11.5px;color:var(--muted);line-height:1.5}
+.sample .no{font-size:12.5px;color:var(--brass);font-weight:600;min-width:18px;padding-top:2px}
+.sample .nm{font-size:14.5px;font-weight:600}
+.sample .ds{font-size:12.5px;color:var(--muted);line-height:1.55}
 
-/* ---------- 按钮 / 分段 ---------- */
+/* ---------- 按钮 / 控件 ---------- */
 .btn{
   border:1px solid var(--pine);background:var(--pine);color:#F6F2E8;
-  padding:8px 16px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;
-  letter-spacing:.03em;
+  padding:9px 18px;border-radius:8px;font-size:14.5px;font-weight:600;cursor:pointer;transition:.15s;letter-spacing:.03em;
 }
 .btn:hover{background:var(--pine-d);border-color:var(--pine-d)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.ghost{background:var(--surface);color:var(--pine);border-color:#CBDBD2}
 .btn.ghost:hover{background:var(--pine-l)}
-.btn.small{padding:5px 11px;font-size:12.5px}
-.btn.primary{padding:9px 20px}
-.link-btn{border:0;background:none;color:var(--sage);font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px 2px}
+.btn.small{padding:6px 12px;font-size:13.5px}
+.btn.primary{padding:10px 22px}
+.link-btn{border:0;background:none;color:var(--sage);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px 2px}
 .link-btn:hover{color:var(--pine)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:10px 0}
 .actions.right{justify-content:flex-end}
-.footer-actions{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
+.footer-actions{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
 
-.segmented{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#FCFAF6}
-.seg{border:0;background:transparent;color:var(--ink-2);padding:7px 14px;font-size:12.5px;cursor:pointer;letter-spacing:.03em}
-.seg + .seg{border-left:1px solid var(--line)}
-.seg.active{background:var(--pine);color:#F6F2E8}
-.segmented.tiny .seg{padding:4px 10px;font-size:11.5px}
-
-/* ---------- 面板头 ---------- */
-.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
-.panel-head h2{font-size:20px}
-.panel-head .muted{font-size:12px;margin-top:3px}
-
-/* ---------- 表格 ---------- */
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;margin:8px 0}
-table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--surface)}
-th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line-2);white-space:nowrap}
-th{background:#FAF6EE;color:var(--pine);font-weight:600;letter-spacing:.03em;font-size:12px}
-td.num{text-align:right;font-variant-numeric:tabular-nums}
-tbody tr:last-child td{border-bottom:0}
-tbody tr:hover td{background:#FCFAF6}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.panel-head h2{font-size:22px}
+.panel-head .muted{font-size:13px;margin-top:4px}
 
 /* ---------- 计划 ---------- */
-.plan-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
-.mode-panel{margin-top:12px}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field-block{margin-bottom:14px}
+.field-label{font-size:13.5px;color:var(--ink-2);margin-bottom:7px}
+.field-label span{color:var(--muted);font-size:12.5px;margin-left:6px}
+.var-chips{display:flex;flex-wrap:wrap;gap:8px}
+.var-chip{
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:8px;
+  padding:7px 12px;font-size:14px;background:#FCFAF6;cursor:pointer;user-select:none;
+}
+.var-chip.on{border-color:var(--pine);background:var(--pine-l);color:var(--pine)}
+.var-chip input{accent-color:var(--pine);width:15px;height:15px}
+.field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:block}
+.field span{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+.field select,.field input{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:14px;
+  background:#FCFAF6;color:var(--ink);font-family:inherit;
+}
+.field select:focus,.field input:focus{outline:2px solid #D8E2DB;border-color:var(--pine)}
+.check-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);margin-top:4px}
+.check-row input{accent-color:var(--pine);width:15px;height:15px}
+
 .prompt{
-  white-space:pre-wrap;max-height:230px;overflow:auto;background:#FCFAF6;border:1px solid var(--line);
-  border-radius:8px;padding:10px;font:11.5px/1.6 var(--mono);color:var(--ink-2);margin:8px 0;
+  white-space:pre-wrap;max-height:220px;overflow:auto;background:#FCFAF6;border:1px solid var(--line);
+  border-radius:8px;padding:11px;font:12px/1.65 var(--mono);color:var(--ink-2);margin:9px 0;
 }
 textarea{
-  width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;font:12.5px/1.6 var(--mono);
+  width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:13px/1.6 var(--mono);
   color:var(--ink-2);background:#FCFAF6;resize:vertical;
 }
 textarea:focus{outline:2px solid #D8E2DB;border-color:var(--pine)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;background:#FCFAF6}
-.chip b{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--muted);font-weight:600;margin-bottom:2px}
+.chip{border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:13px;background:#FCFAF6;flex:1 1 45%}
+.chip b{display:block;font-size:11.5px;letter-spacing:.1em;color:var(--muted);font-weight:600;margin-bottom:2px}
 .chip span{color:var(--ink-2)}
 
-/* ---------- 结论 ---------- */
-.conclusion{border-left:3px solid var(--pine)}
-.findings{display:flex;flex-direction:column;gap:0}
-.finding{padding:12px 0;border-bottom:1px solid var(--line-2)}
-.finding:last-child{border-bottom:0}
-.finding .f-head{display:flex;align-items:baseline;gap:8px}
-.finding .f-title{font-size:13.5px;font-weight:600}
-.finding .f-level{font-size:10.5px;letter-spacing:.08em;padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
-.finding.high .f-level{color:var(--clay);border-color:#E7C9C2;background:var(--clay-l)}
-.finding.mid .f-level{color:var(--brass-d);border-color:#E6D7B7;background:var(--brass-l)}
-.finding.low .f-level{color:var(--sage);border-color:#D6DFD9;background:#F2F5F3}
-.finding .f-text{font-size:13px;color:var(--ink-2);line-height:1.72;margin-top:4px}
-.ai-out{white-space:pre-wrap;font-size:13px;line-height:1.8;background:#FCFAF6;border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:10px}
-.ai-out:empty{display:none}
+/* ---------- 表格 ---------- */
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line-2);white-space:nowrap}
+th{background:#FAF6EE;color:var(--pine);font-weight:600;letter-spacing:.03em;font-size:13px}
+td.num{text-align:right}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#FCFAF6}
 
-/* ---------- 关键指标 ---------- */
-.key-grid{display:grid;grid-template-columns:1.5fr .75fr .75fr;gap:16px}
-.stat{display:flex;flex-direction:column;justify-content:center}
-.k-label{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-.k-value{font-size:26px;font-weight:600;color:var(--pine);line-height:1.3;margin-top:2px;font-variant-numeric:tabular-nums}
-.k-note{font-size:11.5px;color:var(--muted);margin-top:2px}
-
-/* ---------- 图表 ---------- */
-.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start}
-.chart-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
-.chart-title{font-size:12.5px;font-weight:600;color:var(--ink)}
-.chart-sub{font-size:11px;color:var(--muted);margin:2px 0 8px}
+/* ---------- 结果 ---------- */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;align-items:start}
+.chart-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.chart-title{font-size:14.5px;font-weight:600;color:var(--ink)}
+.chart-sub{font-size:12.5px;color:var(--muted);margin:3px 0 10px}
 svg.chart{width:100%;height:auto;display:block}
 .axis{stroke:#E3DCCE;stroke-width:1}
-.tick{fill:#8B8878;font-size:9.5px}
-.lbl{fill:#3C4A44;font-size:10px}
+.tick{fill:#8B8878;font-size:11px}
+.lbl{fill:#3C4A44;font-size:12px}
 
-/* ---------- 折叠 ---------- */
-.detail{padding:0}
-.detail summary{
-  list-style:none;cursor:pointer;padding:16px 20px;font-size:14px;font-weight:600;color:var(--pine);
-  display:flex;align-items:center;gap:8px;
-}
-.detail summary::-webkit-details-marker{display:none}
-.detail summary::before{content:"▸";color:var(--brass);font-size:12px;transition:.15s}
-.detail[open] summary::before{transform:rotate(90deg)}
-.detail summary::after{content:"描述统计 · 分组比较 · 相关分析 · 频数分布";margin-left:auto;font-size:11px;font-weight:400;color:var(--muted)}
-.detail-body{padding:0 20px 18px;border-top:1px solid var(--line-2)}
-.detail-body h4{font-size:13px;margin:16px 0 4px;color:var(--ink-2)}
+.result-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+.ai-out{white-space:pre-wrap;font-size:14.5px;line-height:1.85;background:#FCFAF6;border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px}
+.ai-out:empty{display:none}
 
 /* ---------- 弹窗 ---------- */
 .modal{position:fixed;inset:0;background:rgba(24,32,28,.42);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal[hidden]{display:none}
-.modal-box{background:var(--surface);border-radius:12px;padding:22px 24px;width:min(520px,94vw);border:1px solid var(--line)}
-.field{display:block;margin:10px 0}
-.field span{display:block;font-size:12px;color:var(--ink-2);margin-bottom:4px;letter-spacing:.03em}
-.field input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#FCFAF6;font-family:var(--mono)}
-.field input:focus{outline:2px solid #D8E2DB;border-color:var(--pine)}
+.modal-box{background:var(--surface);border-radius:12px;padding:24px 26px;width:min(560px,94vw);border:1px solid var(--line)}
+.modal-box .field{margin:10px 0}
 
-.foot{max-width:1120px;margin:0 auto;padding:14px 24px 28px;color:var(--muted);font-size:11.5px;line-height:1.7;border-top:1px solid var(--line)}
+.foot{max-width:1280px;margin:0 auto;padding:16px 32px 32px;color:var(--muted);font-size:12.5px;line-height:1.75;border-top:1px solid var(--line)}
 
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
-  background:var(--pine-d);color:#F6F2E8;padding:9px 16px;border-radius:8px;font-size:12.5px;
+  background:var(--pine-d);color:#F6F2E8;padding:10px 18px;border-radius:8px;font-size:13.5px;
   opacity:0;pointer-events:none;transition:.2s;z-index:99;max-width:80vw;
 }
 .toast.show{opacity:1;transform:translateX(-50%)}
 
-@media (max-width:900px){
-  .sample-grid,.plan-grid,.key-grid,.charts{grid-template-columns:1fr}
-  .steps li{margin-right:18px}
-  .topbar{padding:10px 16px;flex-wrap:wrap}
-  main{padding:16px 14px 40px}
-  .import-card{padding:18px}
+@media (max-width:1000px){
+  .import-grid,.plan-grid,.result-grid,.charts{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}
+  main{padding:16px 16px 40px}
+  .topbar{padding:12px 18px;flex-wrap:wrap}
+  .steps li{margin-right:20px}
 }
 
 @media print{
-  .topbar,.steps,.footer-actions,.actions,.foot,.segmented{display:none!important}
+  .topbar,.steps,.footer-actions,.actions,.foot{display:none!important}
   body{background:#fff}
-  .card{border:0;padding:0;margin:0 0 14px}
+  .card,.chart-card{border:0;padding:0;margin:0 0 14px}
   .charts{grid-template-columns:1fr 1fr}
-  .detail summary::after{display:none}
 }
 
 </style>
@@ -272,27 +250,33 @@ svg.chart{width:100%;height:auto;display:block}
 
   <!-- ============ 1 导入 ============ -->
   <section class="panel" data-panel="1">
-    <div class="card import-card">
-      <div class="card-head">
-        <h2>导入数据</h2>
-        <span class="hint">.xlsx / .csv　·　首行为变量名</span>
-      </div>
-      <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
+    <div class="import-grid">
+      <div class="card drop-card">
+        <div class="card-head">
+          <h2>导入数据</h2>
+          <span class="hint">.xlsx / .csv　·　首行为变量名</span>
+        </div>
+        <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
 
-      <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
-        <div class="dz-icon">＋</div>
-        <p class="dz-title">点击选择文件，或拖拽至此</p>
-        <p class="dz-sub">单表数据，建议 5000 行以内</p>
-        <button class="btn ghost small" id="pickBtn" type="button">选择文件</button>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
+          <div class="dz-icon">＋</div>
+          <p class="dz-title">点击选择文件，或拖拽至此</p>
+          <p class="dz-sub">单表数据，建议 5000 行以内</p>
+          <button class="btn small" id="pickBtn" type="button">选择文件</button>
+        </div>
+
+        <p class="fineprint">统计量与图形由程序计算，可复现、可核对；模型仅提供方案建议与文字解读，不参与数值计算。</p>
       </div>
 
-      <div class="sample-block">
-        <div class="block-label">示例数据</div>
-        <div class="sample-grid" id="sampleList"></div>
+      <div class="card sample-card">
+        <div class="card-head">
+          <h3>示例数据</h3>
+          <span class="hint">点击直接载入</span>
+        </div>
+        <div id="sampleList" class="sample-list"></div>
+        <p class="fineprint">示例均为模拟数据，用于验证缺失值、离群值与相关分析的呈现方式。</p>
       </div>
-
-      <p class="fineprint">统计量与图形由程序计算，可复现、可核对；分析结论可选由语言模型生成，模型不参与数值计算。</p>
     </div>
   </section>
 
@@ -306,55 +290,64 @@ svg.chart{width:100%;height:auto;display:block}
       <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
-    <div class="card">
-      <div class="card-head">
-        <h3>变量清单</h3>
-        <span class="hint">由程序识别，非模型推断</span>
-      </div>
-      <div class="table-wrap"><table id="profileTable"></table></div>
-      <p class="fineprint" id="cleanNote"></p>
-    </div>
-
     <div class="plan-grid">
       <div class="card">
-        <div class="card-head"><h3>确定统计方案</h3></div>
-        <div class="segmented" id="planMode">
-          <button class="seg active" data-mode="api">模型直连</button>
-          <button class="seg" data-mode="copy">复制提示词</button>
-          <button class="seg" data-mode="default">默认方案</button>
+        <div class="card-head">
+          <h3>变量清单</h3>
+          <span class="hint">由程序识别</span>
         </div>
-
-        <div class="mode-panel" data-mode="api">
-          <p class="muted">使用已配置的模型接口，由模型依据变量结构确定本次输出的统计量与分组、相关组合。</p>
-          <div class="actions"><button class="btn small" id="runPlanAI">生成分析计划</button></div>
-          <p class="fineprint" id="apiHintPlan"></p>
-        </div>
-
-        <div class="mode-panel" data-mode="copy" hidden>
-          <p class="muted">复制提示词至任一对话式模型平台，将其返回的 JSON 粘贴回填。</p>
-          <div class="actions">
-            <button class="btn ghost small" id="copyPlanPrompt">复制提示词</button>
-            <button class="link-btn" id="togglePlanPrompt" type="button">查看提示词</button>
-          </div>
-          <pre class="prompt" id="planPromptPreview" hidden></pre>
-          <textarea id="planInput" rows="5" placeholder="粘贴模型返回的 JSON"></textarea>
-          <div class="actions"><button class="btn small" id="applyPlan">解析并应用</button></div>
-        </div>
-
-        <div class="mode-panel" data-mode="default" hidden>
-          <p class="muted">不调用模型，按变量类型自动确定统计方案，适用于快速复核或无网络环境。</p>
-          <div class="actions"><button class="btn small" id="useDefault">采用默认方案</button></div>
-        </div>
+        <div class="table-wrap"><table id="profileTable"></table></div>
+        <p class="fineprint" id="cleanNote"></p>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <h3>计划内容</h3>
-          <span class="hint" id="planSourceTag">默认方案</span>
+          <h3>分析设置</h3>
+          <span class="hint">自行选择参与分析的变量</span>
         </div>
+
+        <div class="field-block">
+          <div class="field-label">数值变量 <span>不参与分析的变量不会被统计</span></div>
+          <div id="numVars" class="var-chips"></div>
+        </div>
+
+        <div class="field-row">
+          <label class="field"><span>分组变量</span>
+            <select id="groupVar"></select>
+          </label>
+          <label class="field"><span>分组比较指标</span>
+            <select id="groupMetric"></select>
+          </label>
+          <label class="field"><span>分布图变量</span>
+            <select id="histVar"></select>
+          </label>
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" id="doCorr" checked />
+          <span>计算相关系数（对所选变量两两求 Pearson r）</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="plan-grid">
+      <div class="card">
+        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
         <div class="chips" id="planChips"></div>
         <p class="fineprint" id="planWarn"></p>
-        <p class="fineprint">计划仅允许出现数据中实际存在的变量与预设统计动作，其余内容将被丢弃。</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>方案辅助（可选）</h3><span class="hint">语言模型</span></div>
+        <p class="muted">可在当前变量范围内请模型给出分析方案，或复制提示词到其他平台。</p>
+        <div class="actions">
+          <button class="btn small" id="runPlanAI">模型推荐方案</button>
+          <button class="btn ghost small" id="copyPlanPrompt">复制提示词</button>
+          <button class="link-btn" id="togglePrompt" type="button">查看提示词</button>
+        </div>
+        <pre class="prompt" id="planPromptPreview" hidden></pre>
+        <textarea id="planInput" rows="4" placeholder="粘贴模型返回的 JSON（可选）"></textarea>
+        <div class="actions"><button class="btn ghost small" id="applyPlan">应用模型方案</button></div>
       </div>
     </div>
 
@@ -372,78 +365,46 @@ svg.chart{width:100%;height:auto;display:block}
         <p class="muted" id="resultMeta">—</p>
       </div>
       <div class="actions">
-        <button class="btn ghost small" id="exportMd">导出报告</button>
+        <button class="btn ghost small" id="exportMd">导出结果</button>
         <button class="btn ghost small" data-goto="2">返回计划</button>
       </div>
     </div>
 
-    <!-- 结论优先 -->
-    <div class="card conclusion">
-      <div class="card-head">
-        <h3>分析结论</h3>
-        <div class="segmented tiny" id="concMode">
-          <button class="seg active" data-conc="rule">规则结论</button>
-          <button class="seg" data-conc="ai">模型解读</button>
-        </div>
-      </div>
-
-      <div id="insightList" class="findings"></div>
-
-      <div id="aiPanel" hidden>
-        <p class="muted">模型仅接收已计算的统计量并组织结论表述，不参与数值计算。</p>
-        <div class="actions">
-          <button class="btn small" id="runAdviceAI">生成模型解读</button>
-          <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
-          <button class="link-btn" id="toggleAdviceInput" type="button">粘贴模型输出</button>
-        </div>
-        <textarea id="adviceInput" rows="4" placeholder="粘贴模型输出" hidden></textarea>
-        <div class="actions" id="applyAdviceRow" hidden><button class="btn small" id="applyAdvice">显示</button></div>
-        <div class="ai-out" id="aiAdvice"></div>
-      </div>
-    </div>
-
-    <!-- 关键指标 -->
-    <div class="key-grid">
-      <div class="card">
-        <div class="card-head"><h3>关键指标</h3><span class="hint">完整统计量见文末</span></div>
-        <div class="table-wrap"><table id="keyTable"></table></div>
-      </div>
-      <div class="card stat">
-        <div class="k-label">组间差异</div>
-        <div class="k-value" id="effectVal">—</div>
-        <div class="k-note" id="effectNote">未执行分组比较</div>
-      </div>
-      <div class="card stat">
-        <div class="k-label">最强相关</div>
-        <div class="k-value" id="corrVal">—</div>
-        <div class="k-note" id="corrNote">未执行相关分析</div>
-      </div>
-    </div>
-
-    <!-- 图表 -->
     <div class="charts" id="charts"></div>
 
-    <!-- 完整数据 -->
-    <details class="card detail">
-      <summary>完整统计结果</summary>
-      <div class="detail-body">
-        <h4>描述统计</h4>
+    <div class="result-grid">
+      <div class="card">
+        <div class="card-head"><h3>描述统计</h3><span class="hint" id="descHint">—</span></div>
         <div class="table-wrap"><table id="descTable"></table></div>
-        <div id="groupBlock" hidden>
-          <h4 id="groupTitle">分组比较</h4>
-          <div class="table-wrap"><table id="groupTable"></table></div>
-          <p class="fineprint" id="groupNote"></p>
-        </div>
-        <div id="corrBlock" hidden>
-          <h4>相关分析</h4>
-          <div class="table-wrap"><table id="corrTable"></table></div>
-        </div>
-        <div id="freqBlock" hidden>
-          <h4>频数分布</h4>
-          <div class="table-wrap"><table id="freqTable"></table></div>
-        </div>
       </div>
-    </details>
+      <div class="card">
+        <div class="card-head"><h3>相关分析</h3><span class="hint">Pearson r</span></div>
+        <div class="table-wrap"><table id="corrTable"></table></div>
+        <p class="fineprint" id="corrNote"></p>
+      </div>
+    </div>
+
+    <div class="card" id="groupCard" hidden>
+      <div class="card-head"><h3>分组统计</h3><span class="hint" id="groupHint">—</span></div>
+      <div class="table-wrap"><table id="groupTable"></table></div>
+      <p class="fineprint" id="groupNote"></p>
+    </div>
+
+    <div class="card ai-card">
+      <div class="card-head">
+        <h3>模型建议</h3>
+        <span class="hint">可选 · 未接入时仅呈现统计结果</span>
+      </div>
+      <p class="muted">统计结果与图形由程序生成；如需具体建议与可执行方案，可调用模型或粘贴外部模型输出。模型只接收已计算的统计量。</p>
+      <div class="actions">
+        <button class="btn small" id="runAdviceAI">生成建议</button>
+        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
+        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
+      </div>
+      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
+      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
+      <div class="ai-out" id="aiAdvice"></div>
+    </div>
 
     <div class="footer-actions">
       <button class="btn ghost" data-goto="2">返回计划</button>
@@ -453,7 +414,7 @@ svg.chart{width:100%;height:auto;display:block}
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。
+  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时，本页只呈现统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
@@ -463,7 +424,7 @@ svg.chart{width:100%;height:auto;display:block}
       <h3>模型设置</h3>
       <span class="hint">OpenAI 兼容接口</span>
     </div>
-    <p class="muted">配置后可直接调用模型生成分析计划与结论。密钥仅保存在本机浏览器，不写入页面源码。</p>
+    <p class="muted">用于生成分析方案建议与文字解读。密钥仅保存在本机浏览器，不写入页面源码。</p>
     <label class="field"><span>接口地址</span><input type="text" id="apiBase" placeholder="https://api.deepseek.com/v1" /></label>
     <label class="field"><span>模型名称</span><input type="text" id="apiModel" placeholder="deepseek-chat" /></label>
     <label class="field"><span>API Key</span><input type="password" id="apiKey" placeholder="sk-..." /></label>
@@ -864,7 +825,9 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   function defaultPlan(prof) {
     var nums = prof.numeric.slice(0, 4);
     var PREFER = /(部门|班级|地区|区域|城市|门店|渠道|类别|分组|团队|科室|行业|产品线)/;
-    var cats = prof.columns.filter(function (c) { return c.type === 'categorical' && !c.idLike; })
+    var cats = prof.columns.filter(function (c) {
+      return c.type === 'categorical' && !c.idLike && c.unique >= 2 && c.unique <= 10;
+    })
       .map(function (c) { return c.name; })
       .sort(function (a, b) {
         var pa = PREFER.test(a) ? 0 : 1, pb = PREFER.test(b) ? 0 : 1;
@@ -910,8 +873,11 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       return out;
     }
 
-    var idSet = {};
-    prof.columns.forEach(function (c) { if (c.idLike) idSet[c.name] = 1; });
+    var idSet = {}, highCard = {};
+    prof.columns.forEach(function (c) {
+      if (c.idLike) idSet[c.name] = 1;
+      if (c.type === 'categorical' && c.unique > 12) highCard[c.name] = 1;
+    });
 
     var plan = { source: 'ai', title: typeof raw.title === 'string' ? raw.title.slice(0, 40) : def.title };
 
@@ -921,12 +887,12 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     plan.metrics = plan.descriptives.slice();
 
     var gb = raw.groupBy;
-    if (typeof gb === 'string' && catSet[gb] && !idSet[gb]) plan.groupBy = gb;
+    if (typeof gb === 'string' && catSet[gb] && !idSet[gb] && !highCard[gb]) plan.groupBy = gb;
     else { if (gb) warnings.push('分组列不合法，已忽略："' + gb + '"'); plan.groupBy = def.groupBy; }
 
     if (raw.groupCompare && typeof raw.groupCompare === 'object') {
       var by = raw.groupCompare.by, metric = raw.groupCompare.metric;
-      if (catSet[by] && numSet[metric] && !idSet[by]) plan.groupCompare = { by: by, metric: metric };
+      if (catSet[by] && numSet[metric] && !idSet[by] && !highCard[by]) plan.groupCompare = { by: by, metric: metric };
       else { warnings.push('分组比较配置不合法，已改为默认'); plan.groupCompare = def.groupCompare; }
     } else plan.groupCompare = def.groupCompare;
 
@@ -948,7 +914,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
     plan.frequency = [];
     (Array.isArray(raw.frequency) ? raw.frequency : []).forEach(function (c) {
-      if (catSet[c] && !idSet[c] && plan.frequency.indexOf(c) < 0 && plan.frequency.length < 2) plan.frequency.push(c);
+      if (catSet[c] && !idSet[c] && !highCard[c] && plan.frequency.indexOf(c) < 0 && plan.frequency.length < 2) plan.frequency.push(c);
       else if (c) warnings.push('忽略不合法频数列："' + c + '"');
     });
     if (!plan.frequency.length) plan.frequency = def.frequency;
@@ -1177,7 +1143,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   }
 
   /* ---------------- 8. 给大模型的两段提示词 ---------------- */
-  function buildPlanPrompt(prof, sampleRows, fileName) {
+  function buildPlanPrompt(prof, sampleRows, fileName, pool) {
     var colLines = prof.columns.map(function (c) {
       return '- ' + c.name + '：' + (c.type === 'numeric' ? '数值型' : '类别型') +
         (c.idLike ? '（标识列，不要用于分组）' : '') +
@@ -1194,6 +1160,8 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       colLines,
       '【前几行样例】',
       sample,
+      '',
+      (pool && pool.length ? '【用户已选定的分析变量】' + pool.join('、') + '（仅可从中选择，不得引入其他变量）' : ''),
       '',
       '【可用的统计动作】（只能从这里选，不能自创）',
       '1) descriptives：对数值列做描述统计（均值、中位数、标准差、方差、最值、四分位、偏度、峰度、异常值）',
@@ -1273,17 +1241,16 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
 </script>
 <script>
-/* 经管数据统计分析 · v3 交互层 */
+/* 经管数据统计分析 · v4 交互层（用户自选变量 · 只呈现统计结果 · 模型可选） */
 (function () {
   'use strict';
 
   var S = {
     fileName: '', headers: [], rows: [], prof: null, clean: null,
-    plan: null, planSource: 'rule', results: null, insights: [], advice: '', warnings: []
+    sel: { metrics: [], group: '', metric: '', corr: true, hist: '' },
+    plan: null, planSource: 'user', results: null, advice: ''
   };
-
   var CFG = { base: '', model: '', key: '' };
-
   var C = { pine: '#2A564A', brass: '#A98545', clay: '#A34A3C', sage: '#6E817A', line: '#E3DCCE', muted: '#8B8878' };
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -1308,13 +1275,11 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     return s.join('.');
   }
   function pct(n) { return n == null ? '—' : (Math.round(n * 1000) / 10) + '%'; }
+  function short(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n) + '…' : s; }
 
-  /* ================= 模型配置 ================= */
+  /* ================= 模型设置 ================= */
   function loadCfg() {
-    try {
-      var raw = localStorage.getItem('sl3_llm');
-      if (raw) CFG = JSON.parse(raw);
-    } catch (e) { }
+    try { var raw = localStorage.getItem('sl4_llm'); if (raw) CFG = JSON.parse(raw); } catch (e) { }
     $('#apiBase').value = CFG.base || '';
     $('#apiModel').value = CFG.model || '';
     $('#apiKey').value = CFG.key || '';
@@ -1322,26 +1287,21 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   }
   function saveCfg() {
     CFG = { base: $('#apiBase').value.trim(), model: $('#apiModel').value.trim(), key: $('#apiKey').value.trim() };
-    try { localStorage.setItem('sl3_llm', JSON.stringify(CFG)); } catch (e) { }
-    updateStatus();
-    toast('配置已保存至本机');
-    $('#settingsModal').hidden = true;
+    try { localStorage.setItem('sl4_llm', JSON.stringify(CFG)); } catch (e) { }
+    updateStatus(); toast('配置已保存至本机'); $('#settingsModal').hidden = true;
   }
   function configured() { return !!(CFG.base && CFG.key); }
   function updateStatus() {
     var el = $('#modelStatus');
     if (configured()) { el.textContent = '已配置模型'; el.classList.add('on'); }
     else { el.textContent = '未连接模型'; el.classList.remove('on'); }
-    $('#apiHintPlan').textContent = configured() ? '' : '尚未配置模型接口，可在右上角“模型设置”中填写，或改用“复制提示词”。';
     $('#runPlanAI').disabled = !configured();
     $('#runAdviceAI').disabled = !configured();
   }
-
   function endpoint() {
     var base = (CFG.base || '').replace(/\/+$/, '');
     return /\/chat\/completions$/.test(base) ? base : base + '/chat/completions';
   }
-
   async function callLLM(prompt, temperature) {
     var res = await fetch(endpoint(), {
       method: 'POST',
@@ -1362,7 +1322,6 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     if (!txt) throw new Error('返回内容为空');
     return txt;
   }
-
   async function testConnection() {
     if (!configured()) { $('#apiHint').textContent = '请先填写接口地址与 API Key。'; return; }
     var hint = $('#apiHint');
@@ -1372,11 +1331,10 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       hint.textContent = '连接正常，返回：' + txt.slice(0, 20);
       toast('连接正常');
     } catch (e) {
-      hint.textContent = '连接失败：' + e.message + '。若提示跨域（CORS），请改用“复制提示词”方式，详见“浏览器直连说明”。';
+      hint.textContent = '连接失败：' + e.message + '。若提示跨域，请改用“复制提示词”。';
       toast('连接失败，请查看提示');
     }
   }
-
   function copyText(txt) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       return navigator.clipboard.writeText(txt).then(function () { toast('已复制'); }, function () { fallbackCopy(txt); });
@@ -1390,7 +1348,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     ta.remove();
   }
 
-  /* ================= 读取文件 ================= */
+  /* ================= 读取 ================= */
   function decode(buf) {
     var u8 = new Uint8Array(buf);
     try { return new TextDecoder('utf-8', { fatal: true }).decode(u8); } catch (e) { }
@@ -1410,16 +1368,11 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     if (['xlsx', 'csv'].indexOf(ext) < 0) { toast('仅支持 .xlsx 与 .csv（.xls 请另存为 .xlsx）'); return; }
     try {
       var buf = await file.arrayBuffer();
-      var table = ext === 'csv'
-        ? StatEngine.parseCSV(decode(buf))
-        : aoaToTable((await XLSXLite.read(buf)).aoa);
+      var table = ext === 'csv' ? StatEngine.parseCSV(decode(buf)) : aoaToTable((await XLSXLite.read(buf)).aoa);
       if (!table.rows.length) { toast('未读取到数据行'); return; }
       S.fileName = file.name;
       start(table.headers, table.rows);
-    } catch (e) {
-      console.error(e);
-      toast('解析失败：' + e.message);
-    }
+    } catch (e) { console.error(e); toast('解析失败：' + e.message); }
   }
 
   /* ================= 第一步 ================= */
@@ -1427,41 +1380,128 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     S.headers = headers; S.rows = rows;
     S.prof = StatEngine.profile(headers, rows);
     S.clean = StatEngine.clean(headers, rows, S.prof);
-    S.plan = StatEngine.defaultPlan(S.prof);
-    S.planSource = 'rule';
-    S.results = null; S.advice = ''; S.warnings = [];
+    S.results = null; S.advice = '';
+
+    var nums = S.prof.numeric.slice(0, 6);
+    var cand = groupCandidates();
+    var prefer = cand.filter(function (c) { return /(班级|部门|地区|区域|城市|门店|渠道|类别|分组)/.test(c); })[0] || cand[0] || '';
+    S.sel = {
+      metrics: nums, group: prefer, metric: nums[0] || '', corr: nums.length >= 2, hist: nums[0] || ''
+    };
     renderProfile();
-    renderPlanPrompt();
+    renderSelections();
     renderPlan();
     goto(2);
   }
 
+  function groupCandidates() {
+    return S.prof.columns.filter(function (c) {
+      return c.type === 'categorical' && !c.idLike && c.unique >= 2 && c.unique <= 10;
+    }).map(function (c) { return c.name; });
+  }
+
   function renderProfile() {
     var p = S.prof, log = S.clean.log;
-    $('#fileMeta').textContent = S.fileName + '　·　' + p.n + ' 行 × ' + p.m + ' 列　·　数值变量 ' + p.numeric.length + ' 个，分类变量 ' + p.categorical.length + ' 个';
+    $('#fileMeta').textContent = S.fileName + '　·　' + p.n + ' 行 × ' + p.m + ' 列　·　数值变量 ' + p.numeric.length +
+      ' 个，分类变量 ' + p.categorical.length + ' 个　·　可分组变量 ' + groupCandidates().length + ' 个';
     $('#profileTable').innerHTML = '<thead><tr><th>变量</th><th>类型</th><th>有效样本</th><th>缺失</th><th>取值数</th><th>范围 / 类别</th></tr></thead><tbody>' +
       p.columns.map(function (c) {
         var info = c.type === 'numeric' ? (c.min + ' — ' + c.max) : c.categories.slice(0, 3).join('、');
-        return '<tr><td>' + esc(c.name) + (c.idLike ? '（标识变量）' : '') + '</td>' +
-          '<td>' + (c.type === 'numeric' ? '数值' : '分类') + '</td>' +
+        var tag = c.idLike ? '（标识变量）' : (c.type === 'categorical' && c.unique > 10 ? '（取值过多，不可分组）' : '');
+        return '<tr><td>' + esc(c.name) + tag + '</td><td>' + (c.type === 'numeric' ? '数值' : '分类') + '</td>' +
           '<td class="num">' + c.n + '</td><td class="num">' + c.missing + '</td><td class="num">' + c.unique + '</td>' +
-          '<td>' + esc(String(info).slice(0, 42)) + '</td></tr>';
+          '<td>' + esc(String(info).slice(0, 40)) + '</td></tr>';
       }).join('') + '</tbody>';
     $('#cleanNote').textContent = '数据整理：删除重复记录 ' + log.dupRemoved + ' 条；空白与全角字符规范化 ' + log.trimmed +
-      ' 处；文本型数值转换 ' + log.coerced + ' 处。缺失值不作插补，统计时按变量剔除并标注有效样本量。';
+      ' 处；文本型数值转换 ' + log.coerced + ' 处。缺失值不作插补，按变量剔除并标注有效样本量。';
   }
 
-  function renderPlanPrompt() {
-    var sample = S.clean.rows.slice(0, 4).map(function (r) {
-      return S.headers.map(function (h) { return r[h]; });
+  /* ================= 第二步：变量选择 ================= */
+  function renderSelections() {
+    var box = $('#numVars');
+    box.innerHTML = '';
+    S.prof.numeric.forEach(function (name) {
+      var label = document.createElement('label');
+      label.className = 'var-chip' + (S.sel.metrics.indexOf(name) >= 0 ? ' on' : '');
+      label.innerHTML = '<input type="checkbox" ' + (S.sel.metrics.indexOf(name) >= 0 ? 'checked' : '') + ' /><span>' + esc(name) + '</span>';
+      var cb = label.querySelector('input');
+      cb.addEventListener('change', function () {
+        if (cb.checked) {
+          if (S.sel.metrics.indexOf(name) < 0) S.sel.metrics.push(name);
+        } else {
+          S.sel.metrics = S.sel.metrics.filter(function (x) { return x !== name; });
+        }
+        label.classList.toggle('on', cb.checked);
+        syncSelectors();
+        renderPlan();
+      });
+      box.appendChild(label);
     });
-    var prompt = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName);
-    var pre = $('#planPromptPreview');
-    pre.textContent = prompt;
-    pre._prompt = prompt;
+
+    var g = $('#groupVar');
+    g.innerHTML = '<option value="">不分组</option>' + groupCandidates().map(function (c) {
+      return '<option value="' + esc(c) + '"' + (S.sel.group === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+    g.onchange = function () {
+      S.sel.group = this.value;
+      if (!S.sel.group) S.sel.metric = S.sel.metrics[0] || '';
+      syncSelectors();
+      renderPlan();
+    };
+
+    syncSelectors();
+  }
+
+  function syncSelectors() {
+    var metrics = S.sel.metrics;
+    if (S.sel.metric && metrics.indexOf(S.sel.metric) < 0) S.sel.metric = metrics[0] || '';
+    if (!S.sel.metric) S.sel.metric = metrics[0] || '';
+    if (S.sel.hist && metrics.indexOf(S.sel.hist) < 0) S.sel.hist = metrics[0] || '';
+    if (!S.sel.hist) S.sel.hist = metrics[0] || '';
+    if (metrics.length < 2) S.sel.corr = false;
+    else if ($('#doCorr').checked) S.sel.corr = true;
+
+    var gm = $('#groupMetric');
+    gm.innerHTML = metrics.map(function (c) { return '<option value="' + esc(c) + '"' + (S.sel.metric === c ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
+    gm.disabled = !S.sel.group;
+    gm.onchange = function () { S.sel.metric = this.value; renderPlan(); };
+
+    var hv = $('#histVar');
+    hv.innerHTML = metrics.map(function (c) { return '<option value="' + esc(c) + '"' + (S.sel.hist === c ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
+    hv.onchange = function () { S.sel.hist = this.value; renderPlan(); };
+
+    var dc = $('#doCorr');
+    dc.checked = S.sel.corr;
+    dc.disabled = metrics.length < 2;
+    dc.onchange = function () {
+      S.sel.corr = this.checked && metrics.length >= 2;
+      renderPlan();
+    };
+  }
+
+  function buildPlan() {
+    var sel = S.sel, m = sel.metrics.slice();
+    var pairs = [];
+    if (sel.corr && m.length >= 2) {
+      for (var i = 0; i < m.length && pairs.length < 6; i++) {
+        for (var j = i + 1; j < m.length && pairs.length < 6; j++) pairs.push([m[i], m[j]]);
+      }
+    }
+    return {
+      source: S.planSource,
+      title: '统计分析',
+      descriptives: m.slice(),
+      metrics: m.slice(),
+      groupBy: sel.group || null,
+      groupCompare: sel.group ? { by: sel.group, metric: sel.metric } : null,
+      correlations: pairs,
+      histogram: sel.hist ? { column: sel.hist, bins: 8 } : null,
+      frequency: []
+    };
   }
 
   function renderPlan() {
+    S.plan = buildPlan();
     var plan = S.plan, box = $('#planChips');
     box.innerHTML = '';
     function chip(label, val) {
@@ -1470,267 +1510,244 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       d.innerHTML = '<b>' + esc(label) + '</b><span>' + esc(val) + '</span>';
       box.appendChild(d);
     }
-    chip('描述统计', (plan.descriptives || []).join('、') || '无');
-    chip('分组比较', plan.groupCompare ? plan.groupCompare.by + ' → ' + plan.groupCompare.metric : '不执行');
-    chip('相关分析', (plan.correlations || []).map(function (p) { return p.join(' × '); }).join('；') || '不执行');
+    chip('描述统计', (plan.descriptives || []).join('、') || '未选择');
+    chip('分组比较', plan.groupCompare ? plan.groupCompare.by + ' → ' + plan.groupCompare.metric : '不分组');
+    chip('相关分析', plan.correlations.length ? plan.correlations.length + ' 对（' + plan.descriptives.join(' × ') + '）' : '不执行');
     chip('分布图', plan.histogram ? plan.histogram.column + '（' + plan.histogram.bins + ' 组）' : '不执行');
-    chip('频数分布', (plan.frequency || []).join('、') || '不执行');
-    $('#planSourceTag').textContent = S.planSource === 'ai' ? '模型生成' : '默认方案';
-    $('#planWarn').textContent = S.warnings.length ? '已修正：' + S.warnings.join('；') : '';
+    $('#planSourceTag').textContent = S.planSource === 'ai' ? '模型推荐（已按界面设置）' : '按当前设置';
+    $('#planPromptPreview').textContent = buildPrompt();
+    $('#planPromptPreview')._prompt = $('#planPromptPreview').textContent;
+    $('#planWarn').textContent = '';
+  }
+
+  function buildPrompt() {
+    var sample = S.clean.rows.slice(0, 4).map(function (r) {
+      return S.headers.map(function (h) { return r[h]; });
+    });
+    var base = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName, S.sel.metrics);
+    var cur = ['描述统计：' + (S.sel.metrics.join('、') || '无'),
+      '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + S.sel.metric) : '不分组'),
+      '相关分析：' + (S.sel.corr ? '所选变量两两相关' : '不执行'),
+      '分布图：' + (S.sel.hist || '无')].join('；');
+    return base + '\n\n【当前界面设置（可在此基础上调整）】\n' + cur;
   }
 
   function applyPlanText(text) {
     var raw = StatEngine.parseJSON(text);
-    if (!raw) { toast('未解析出 JSON'); $('#planWarn').textContent = '解析失败：未在返回内容中找到合法 JSON 对象。'; return false; }
+    if (!raw) { toast('未解析出 JSON'); $('#planWarn').textContent = '解析失败：未找到合法 JSON 对象。'; return false; }
     var v = StatEngine.validatePlan(raw, S.prof);
-    S.plan = v.plan; S.warnings = v.warnings; S.planSource = 'ai';
+    var plan = v.plan;
+
+    // 把模型方案映射回界面设置，保证所见即所算
+    var nums = S.prof.numeric;
+    var keep = plan.descriptives.filter(function (c) { return nums.indexOf(c) >= 0; });
+    if (keep.length) S.sel.metrics = keep;
+    S.sel.group = plan.groupCompare && groupCandidates().indexOf(plan.groupCompare.by) >= 0 ? plan.groupCompare.by : '';
+    S.sel.metric = plan.groupCompare && S.sel.group ? plan.groupCompare.metric : (S.sel.metrics[0] || '');
+    if (plan.correlations.length) {
+      plan.correlations.forEach(function (p) {
+        p.forEach(function (c) { if (S.sel.metrics.indexOf(c) < 0) S.sel.metrics.push(c); });
+      });
+      S.sel.corr = true;
+    } else S.sel.corr = false;
+    S.sel.hist = plan.histogram ? plan.histogram.column : (S.sel.metrics[0] || '');
+
+    S.planSource = 'ai';
+    renderSelections();   // 重建勾选与下拉
     renderPlan();
-    toast(v.warnings.length ? '计划已应用，' + v.warnings.length + ' 处已修正' : '计划已应用');
+    if (v.warnings.length) $('#planWarn').textContent = '已修正：' + v.warnings.join('；');
+    toast('已应用模型方案');
     return true;
   }
 
-  function setPlanMode(mode) {
-    $$('#planMode .seg').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-mode') === mode); });
-    $$('.mode-panel').forEach(function (p) { p.hidden = p.getAttribute('data-mode') !== mode; });
-  }
-
-  /* ================= 第二步 ================= */
+  /* ================= 执行 ================= */
   function compute() {
+    if (!S.sel.metrics.length) { toast('请至少选择一个数值变量'); return; }
+    S.plan = buildPlan();
     S.results = StatEngine.compute(S.plan, S.clean);
-    S.insights = StatEngine.insights(S.results, S.prof);
     renderResults();
     goto(3);
   }
 
-  function cvLabel(cv) {
-    if (cv == null) return '—';
-    if (cv >= 0.3) return '偏高';
-    if (cv >= 0.2) return '中等';
-    if (cv < 0.05) return '集中';
-    return '适中';
-  }
-
   function renderResults() {
     var r = S.results;
-    $('#resultMeta').textContent = S.fileName + '　·　计划来源：' + (S.planSource === 'ai' ? '模型生成' : '默认方案') +
-      '　·　有效样本 ' + r.meta.n + '　·　' + new Date().toLocaleString('zh-CN');
+    $('#resultMeta').textContent = S.fileName + '　·　有效样本 ' + r.meta.n + '　·　统计变量 ' + r.descriptives.length +
+      ' 个　·　' + (r.groups ? '分组：' + r.groups.by : '未分组') + '　·　' + (r.correlations.length ? '相关 ' + r.correlations.length + ' 对' : '未做相关');
+    $('#descHint').textContent = '变量 ' + r.descriptives.length + ' 个';
 
-    // 结论
-    $('#insightList').innerHTML = S.insights.map(function (i) {
-      var lv = i.level === 'high' ? '需关注' : i.level === 'mid' ? '提示' : '一般';
-      return '<div class="finding ' + i.level + '"><div class="f-head"><span class="f-title">' + esc(i.title) +
-        '</span><span class="f-level">' + lv + '</span></div><div class="f-text">' + esc(i.text) + '</div></div>';
-    }).join('');
-    $('#aiAdvice').textContent = S.advice || '';
-
-    // 关键指标（前 3 个变量）
-    var top = r.descriptives.slice(0, 3);
-    $('#keyTable').innerHTML = '<thead><tr><th>变量</th><th>均值</th><th>标准差</th><th>变异系数</th><th>离散程度</th></tr></thead><tbody>' +
-      top.map(function (d) {
-        return '<tr><td>' + esc(d.column) + '</td><td class="num">' + fmt(d.mean, 2) + '</td><td class="num">' + fmt(d.sd, 2) +
-          '</td><td class="num">' + fmt(d.cv, 3) + '</td><td>' + cvLabel(d.cv) + '</td></tr>';
+    $('#descTable').innerHTML = '<thead><tr><th>变量</th><th>n</th><th>均值</th><th>标准差</th><th>中位数</th><th>最小</th><th>最大</th><th>变异系数</th><th>偏度</th><th>离群值</th></tr></thead><tbody>' +
+      r.descriptives.map(function (d) {
+        return '<tr><td>' + esc(d.column) + '</td><td class="num">' + d.n + '</td><td class="num">' + fmt(d.mean, 2) +
+          '</td><td class="num">' + fmt(d.sd, 2) + '</td><td class="num">' + fmt(d.median, 2) +
+          '</td><td class="num">' + fmt(d.min, 1) + '</td><td class="num">' + fmt(d.max, 1) +
+          '</td><td class="num">' + fmt(d.cv, 3) + '</td><td class="num">' + fmt(d.skew, 2) +
+          '</td><td class="num">' + d.outliers + '</td></tr>';
       }).join('') + '</tbody>';
 
-    // 组间与相关概览
-    if (r.groups && r.groups.effect != null) {
-      $('#effectVal').textContent = 'd = ' + fmt(r.groups.effect, 2);
-      $('#effectNote').textContent = r.groups.by + ' × ' + r.groups.metric + '，均值极差 ' + fmt(r.groups.spread, 2);
-    } else {
-      $('#effectVal').textContent = '—';
-      $('#effectNote').textContent = '未执行分组比较';
-    }
     if (r.correlations.length) {
-      var best = r.correlations.slice().sort(function (a, b) { return Math.abs(b.r) - Math.abs(a.r); })[0];
-      $('#corrVal').textContent = 'r = ' + fmt(best.r, 2);
-      $('#corrNote').textContent = best.a + ' × ' + best.b + '（n = ' + best.n + '）';
-    } else {
-      $('#corrVal').textContent = '—';
-      $('#corrNote').textContent = '未执行相关分析';
-    }
-
-    renderCharts(r);
-    renderDetail(r);
-  }
-
-  function renderDetail(r) {
-    var rows = [
-      ['有效样本 n', function (d) { return d.n; }],
-      ['均值', function (d) { return fmt(d.mean, 2); }],
-      ['中位数', function (d) { return fmt(d.median, 2); }],
-      ['标准差', function (d) { return fmt(d.sd, 2); }],
-      ['方差', function (d) { return fmt(d.variance, 2); }],
-      ['最小值', function (d) { return fmt(d.min, 2); }],
-      ['最大值', function (d) { return fmt(d.max, 2); }],
-      ['极差', function (d) { return fmt(d.range, 2); }],
-      ['Q1 / Q3', function (d) { return fmt(d.q1, 1) + ' / ' + fmt(d.q3, 1); }],
-      ['四分位距 IQR', function (d) { return fmt(d.iqr, 2); }],
-      ['变异系数 CV', function (d) { return fmt(d.cv, 3); }],
-      ['95% 置信区间', function (d) { return d.ci95 ? fmt(d.ci95[0], 1) + ' — ' + fmt(d.ci95[1], 1) : '—'; }],
-      ['偏度', function (d) { return fmt(d.skew, 2); }],
-      ['峰度', function (d) { return fmt(d.kurtosis, 2); }],
-      ['离群值个数', function (d) { return d.outliers; }]
-    ];
-    $('#descTable').innerHTML = '<thead><tr><th>统计量</th>' + r.descriptives.map(function (d) { return '<th>' + esc(d.column) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      rows.map(function (row) {
-        return '<tr><td>' + row[0] + '</td>' + r.descriptives.map(function (d) { return '<td class="num">' + row[1](d) + '</td>'; }).join('') + '</tr>';
-      }).join('') + '</tbody>';
-
-    if (r.groups) {
-      $('#groupBlock').hidden = false;
-      $('#groupTitle').textContent = '分组比较：' + r.groups.by + ' × ' + r.groups.metric;
-      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th>样本量</th><th>均值</th><th>中位数</th><th>标准差</th><th>最小</th><th>最大</th></tr></thead><tbody>' +
-        r.groups.rows.map(function (g) {
-          return '<tr><td>' + esc(g.group) + '</td><td class="num">' + g.n + '</td><td class="num">' + fmt(g.mean, 2) +
-            '</td><td class="num">' + fmt(g.median, 2) + '</td><td class="num">' + fmt(g.sd, 2) +
-            '</td><td class="num">' + fmt(g.min, 1) + '</td><td class="num">' + fmt(g.max, 1) + '</td></tr>';
-        }).join('') + '</tbody>';
-      var note = '最高组与最低组均值差 ' + fmt(r.groups.spread, 2);
-      if (r.groups.effect != null) note += '；效应量 d = ' + r.groups.effect + '（≥0.8 为大效应）';
-      $('#groupNote').textContent = note + '。';
-    } else { $('#groupBlock').hidden = true; }
-
-    if (r.correlations.length) {
-      $('#corrBlock').hidden = false;
-      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th>Pearson r</th><th>样本量</th><th>显著性</th></tr></thead><tbody>' +
+      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th>r</th><th>n</th><th>显著性</th></tr></thead><tbody>' +
         r.correlations.map(function (c) {
           return '<tr><td>' + esc(c.a) + '</td><td>' + esc(c.b) + '</td><td class="num">' + fmt(c.r, 3) +
             '</td><td class="num">' + c.n + '</td><td>' + (c.significant ? '显著' : '不显著') + '</td></tr>';
         }).join('') + '</tbody>';
-    } else { $('#corrBlock').hidden = true; }
+      $('#corrNote').textContent = '显著性以 |r| > 1.96/√(n−2) 近似判断；相关关系不等同于因果关系。';
+    } else {
+      $('#corrTable').innerHTML = '<tbody><tr><td class="muted">未选择相关分析（或所选变量少于 2 个）。</td></tr></tbody>';
+      $('#corrNote').textContent = '';
+    }
 
-    if (r.frequency.length) {
-      $('#freqBlock').hidden = false;
-      $('#freqTable').innerHTML = '<thead><tr><th>变量</th><th>取值</th><th>频数</th><th>占比</th></tr></thead><tbody>' +
-        r.frequency.map(function (f) {
-          return f.items.map(function (it) {
-            return '<tr><td>' + esc(f.column) + '</td><td>' + esc(it.value) + '</td><td class="num">' + it.count + '</td><td class="num">' + pct(it.pct) + '</td></tr>';
-          }).join('');
+    if (r.groups) {
+      $('#groupCard').hidden = false;
+      $('#groupHint').textContent = r.groups.by + ' × ' + r.groups.metric + '　·　' + r.groups.rows.length + ' 组';
+      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th>n</th><th>均值</th><th>标准差</th><th>最小</th><th>最大</th></tr></thead><tbody>' +
+        r.groups.rows.map(function (g) {
+          return '<tr><td>' + esc(g.group) + '</td><td class="num">' + g.n + '</td><td class="num">' + fmt(g.mean, 2) +
+            '</td><td class="num">' + fmt(g.sd, 2) + '</td><td class="num">' + fmt(g.min, 1) + '</td><td class="num">' + fmt(g.max, 1) + '</td></tr>';
         }).join('') + '</tbody>';
-    } else { $('#freqBlock').hidden = true; }
+      var note = '最高组与最低组均值差 ' + fmt(r.groups.spread, 2);
+      if (r.groups.effect != null) note += '；效应量 d = ' + fmt(r.groups.effect, 2) + '（≥0.80 为大效应）';
+      $('#groupNote').textContent = note + '。';
+    } else { $('#groupCard').hidden = true; }
+
+    $('#aiAdvice').textContent = S.advice || '';
+    renderCharts(r);
   }
 
   /* ================= 图表 ================= */
-  function svgWrap(w, h, inner) {
-    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '">' + inner + '</svg>';
-  }
+  function svgWrap(w, h, inner) { return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '">' + inner + '</svg>'; }
 
   function histogramSVG(hist, meanVal) {
-    var W = 440, H = 190, P = { l: 38, r: 12, t: 18, b: 30 };
+    var W = 560, H = 260, P = { l: 46, r: 16, t: 26, b: 40 };
     var max = Math.max.apply(null, hist.bins.map(function (b) { return b.count; })) || 1;
     var n = hist.bins.length, bw = (W - P.l - P.r) / n;
     var bars = hist.bins.map(function (b, i) {
       var bh = (H - P.t - P.b) * (b.count / max);
       var x = P.l + i * bw + 2;
       return '<rect x="' + x.toFixed(1) + '" y="' + (H - P.b - bh).toFixed(1) + '" width="' + (bw - 4).toFixed(1) +
-        '" height="' + bh.toFixed(1) + '" fill="' + C.pine + '" fill-opacity=".82" rx="1.5"><title>' + b.lo + ' — ' + b.hi + '：' + b.count + '</title></rect>';
+        '" height="' + bh.toFixed(1) + '" fill="' + C.pine + '" fill-opacity=".82" rx="1.5"><title>' + b.lo + ' — ' + b.hi + '：' + b.count + ' 个</title></rect>';
     }).join('');
-    var ticks = [];
-    for (var i = 0; i < n; i += Math.ceil(n / 5)) {
-      ticks.push('<text class="tick" x="' + (P.l + i * bw + bw / 2).toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + fmt(hist.bins[i].lo, 0) + '</text>');
+    var ticks = '';
+    for (var i = 0; i < n; i += Math.ceil(n / 6)) {
+      ticks += '<text class="tick" x="' + (P.l + i * bw + bw / 2).toFixed(1) + '" y="' + (H - 16) + '" text-anchor="middle">' + fmt(hist.bins[i].lo, 0) + '</text>';
     }
     var grid = '<line class="axis" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
-      '<text class="tick" x="' + (P.l - 6) + '" y="' + (P.t + 8) + '" text-anchor="end">' + max + '</text>' +
-      '<text class="tick" x="' + (P.l - 6) + '" y="' + (H - P.b) + '" text-anchor="end">0</text>';
+      '<text class="tick" x="' + (P.l - 8) + '" y="' + (P.t + 8) + '" text-anchor="end">' + max + '</text>' +
+      '<text class="tick" x="' + (P.l - 8) + '" y="' + (H - P.b) + '" text-anchor="end">0</text>';
     var meanLine = '';
     if (meanVal != null) {
-      var all = hist.bins;
-      var lo = all[0].lo, hi = all[all.length - 1].hi;
+      var lo = hist.bins[0].lo, hi = hist.bins[hist.bins.length - 1].hi;
       var xm = P.l + (W - P.l - P.r) * ((meanVal - lo) / (hi - lo || 1));
       if (xm > P.l && xm < W - P.r) {
-        meanLine = '<line x1="' + xm.toFixed(1) + '" y1="' + P.t + '" x2="' + xm.toFixed(1) + '" y2="' + (H - P.b) + '" stroke="' + C.brass + '" stroke-width="1.2" stroke-dasharray="4 3"/>' +
-          '<text class="tick" x="' + (W - P.r) + '" y="' + (P.t - 4) + '" text-anchor="end" fill="' + C.brass + '">均值 ' + fmt(meanVal, 1) + '</text>';
+        meanLine = '<line x1="' + xm.toFixed(1) + '" y1="' + P.t + '" x2="' + xm.toFixed(1) + '" y2="' + (H - P.b) + '" stroke="' + C.brass + '" stroke-width="1.4" stroke-dasharray="5 4"/>' +
+          '<text class="tick" x="' + (W - P.r) + '" y="' + (P.t - 8) + '" text-anchor="end" fill="' + C.brass + '">均值 ' + fmt(meanVal, 1) + '</text>';
       }
     }
-    return svgWrap(W, H, grid + bars + meanLine + ticks.join(''));
+    return svgWrap(W, H, grid + bars + meanLine + ticks);
   }
 
   function groupBarSVG(g) {
-    var W = 440, H = 200, P = { l: 40, r: 12, t: 20, b: 34 };
+    var W = 560, H = 280, P = { l: 50, r: 16, t: 30, b: 58 };
     var rows = g.rows;
     var vals = rows.map(function (r) { return r.mean; });
-    var mx = Math.max.apply(null, vals);
-    var hi = mx * 1.18;          // 纵轴自 0 起，避免夸大组间差异
-    var lo = 0;
+    var hi = Math.max.apply(null, vals) * 1.18 || 1, lo = 0;
     var step = (W - P.l - P.r) / rows.length;
-    var bw = Math.min(46, step * 0.5);
+    var bw = Math.min(52, step * 0.52);
+    var dense = rows.length > 6;
+    var maxLabels = rows.length <= 8;
     function Y(v) { return P.t + (H - P.t - P.b) * (1 - (v - lo) / (hi - lo || 1)); }
     var bars = rows.map(function (r, i) {
       var x = P.l + step * i + (step - bw) / 2;
       var y = Y(r.mean), h = H - P.b - y;
-      var sdTop = r.sd != null ? Y(Math.min(hi, r.mean + r.sd)) : y;
-      var sdBot = r.sd != null ? Y(Math.max(lo, r.mean - r.sd)) : y;
-      var whisk = r.sd != null
-        ? '<line x1="' + (x + bw / 2) + '" y1="' + sdTop + '" x2="' + (x + bw / 2) + '" y2="' + sdBot + '" stroke="' + C.muted + '" stroke-width="1"/>' +
-          '<line x1="' + (x + bw / 2 - 6) + '" y1="' + sdTop + '" x2="' + (x + bw / 2 + 6) + '" y2="' + sdTop + '" stroke="' + C.muted + '" stroke-width="1"/>' +
-          '<line x1="' + (x + bw / 2 - 6) + '" y1="' + sdBot + '" x2="' + (x + bw / 2 + 6) + '" y2="' + sdBot + '" stroke="' + C.muted + '" stroke-width="1"/>'
-        : '';
-      var label = String(r.group).length > 7 ? String(r.group).slice(0, 6) + '…' : r.group;
-      return '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, h) + '" fill="' + C.pine + '" fill-opacity=".8" rx="2"><title>' + esc(r.group) + '：均值 ' + r.mean + '，SD ' + (r.sd == null ? '—' : r.sd) + '</title></rect>' +
-        whisk +
-        '<text class="tick" x="' + (x + bw / 2) + '" y="' + (H - 14) + '" text-anchor="middle">' + esc(label) + '</text>' +
-        '<text class="lbl" x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle" fill="' + C.pine + '">' + fmt(r.mean, 1) + '</text>';
+      var whisk = '';
+      if (!dense && r.sd != null) {
+        var top = Y(Math.min(hi, r.mean + r.sd)), bot = Y(Math.max(lo, r.mean - r.sd));
+        whisk = '<line x1="' + (x + bw / 2) + '" y1="' + top + '" x2="' + (x + bw / 2) + '" y2="' + bot + '" stroke="' + C.muted + '" stroke-width="1"/>' +
+          '<line x1="' + (x + bw / 2 - 7) + '" y1="' + top + '" x2="' + (x + bw / 2 + 7) + '" y2="' + top + '" stroke="' + C.muted + '" stroke-width="1"/>' +
+          '<line x1="' + (x + bw / 2 - 7) + '" y1="' + bot + '" x2="' + (x + bw / 2 + 7) + '" y2="' + bot + '" stroke="' + C.muted + '" stroke-width="1"/>';
+      }
+      var label = short(r.group, dense ? 4 : 6);
+      var tx = x + bw / 2;
+      var ly = H - 18;
+      var topY = (!dense && r.sd != null) ? Y(Math.min(hi, r.mean + r.sd)) : y;
+      var rot = dense ? ' transform="rotate(-28 ' + tx + ' ' + ly + ')" text-anchor="end"' : ' text-anchor="middle"';
+      return '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, h) + '" fill="' + C.pine + '" fill-opacity=".82" rx="2"><title>' +
+        esc(r.group) + '：均值 ' + r.mean + '，SD ' + (r.sd == null ? '—' : r.sd) + '，n=' + r.n + '</title></rect>' + whisk +
+        '<text class="tick"' + rot + ' x="' + tx + '" y="' + ly + '">' + esc(label) + '</text>' +
+        (maxLabels ? '<text class="lbl" x="' + tx + '" y="' + (topY - 8) + '" text-anchor="middle" fill="' + C.pine + '">' + fmt(r.mean, 1) + '</text>' : '');
     }).join('');
     var axis = '<line class="axis" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
-      '<text class="tick" x="' + (P.l - 6) + '" y="' + (P.t + 8) + '" text-anchor="end">' + fmt(hi, 0) + '</text>' +
-      '<text class="tick" x="' + (P.l - 6) + '" y="' + (H - P.b) + '" text-anchor="end">' + fmt(lo, 0) + '</text>';
+      '<text class="tick" x="' + (P.l - 8) + '" y="' + (P.t + 8) + '" text-anchor="end">' + fmt(hi, 0) + '</text>' +
+      '<text class="tick" x="' + (P.l - 8) + '" y="' + (H - P.b) + '" text-anchor="end">0</text>';
     return svgWrap(W, H, axis + bars);
   }
 
   function scatterSVG(sc) {
-    var W = 440, H = 235, P = { l: 46, r: 14, t: 22, b: 30 };
+    var W = 560, H = 280, P = { l: 58, r: 18, t: 30, b: 42 };
     var pts = sc.points;
     if (!pts.length) return '<p class="muted">无有效配对观测</p>';
     var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
     var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
     var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    var xp = (x1 - x0) * 0.05 || 1, yp = (y1 - y0) * 0.08 || 1;
+    var xp = (x1 - x0) * 0.06 || 1, yp = (y1 - y0) * 0.08 || 1;
     x0 -= xp; x1 += xp; y0 -= yp; y1 += yp;
     function X(v) { return P.l + (W - P.l - P.r) * ((v - x0) / (x1 - x0)); }
     function Y(v) { return P.t + (H - P.t - P.b) * (1 - (v - y0) / (y1 - y0)); }
     var dots = pts.map(function (p) {
-      return '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="2.2" fill="' + C.pine + '" fill-opacity=".45"/>';
+      return '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="2.6" fill="' + C.pine + '" fill-opacity=".42"/>';
     }).join('');
-    // 最小二乘拟合
     var n = pts.length, sx = 0, sy = 0, sxy = 0, sxx = 0;
     pts.forEach(function (p) { sx += p[0]; sy += p[1]; sxy += p[0] * p[1]; sxx += p[0] * p[0]; });
-    var denom = n * sxx - sx * sx;
-    var line = '';
+    var denom = n * sxx - sx * sx, line = '';
     if (Math.abs(denom) > 1e-9) {
       var b = (n * sxy - sx * sy) / denom, a = (sy - b * sx) / n;
-      var xA = x0, xB = x1;
-      line = '<line x1="' + X(xA) + '" y1="' + Y(a + b * xA) + '" x2="' + X(xB) + '" y2="' + Y(a + b * xB) + '" stroke="' + C.brass + '" stroke-width="1.4"/>';
+      line = '<line x1="' + X(x0) + '" y1="' + Y(a + b * x0) + '" x2="' + X(x1) + '" y2="' + Y(a + b * x1) + '" stroke="' + C.brass + '" stroke-width="1.6"/>';
     }
     var ax = '<line class="axis" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
       '<line class="axis" x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (H - P.b) + '"/>' +
-      '<text class="tick" x="' + ((P.l + W - P.r) / 2) + '" y="' + (H - 8) + '" text-anchor="middle">横轴：' + esc(sc.x) + '</text>' +
-      '<text class="tick" x="' + P.l + '" y="' + (P.t - 5) + '">纵轴：' + esc(sc.y) + '</text>' +
-      '<text class="lbl" x="' + (P.l + 6) + '" y="' + (P.t + 12) + '" fill="' + C.brass + '">r = ' + fmt(sc.r, 3) + '（n = ' + n + '）</text>';
+      '<text class="tick" x="' + ((P.l + W - P.r) / 2) + '" y="' + (H - 12) + '" text-anchor="middle">横轴：' + esc(short(sc.x, 10)) + '</text>' +
+      '<text class="tick" x="' + P.l + '" y="' + (P.t - 8) + '">纵轴：' + esc(short(sc.y, 10)) + '</text>' +
+      '<text class="tick" x="' + (W - P.r) + '" y="' + (P.t - 8) + '" text-anchor="end" fill="' + C.brass + '">r = ' + fmt(sc.r, 3) + '（n = ' + n + '）</text>';
     return svgWrap(W, H, ax + line + dots);
   }
 
   function corrMatrixSVG(cm) {
-    var names = cm.names, m = cm.matrix;
-    var cell = 44, labelW = 62, top = 30;
-    var W = labelW + cell * names.length + 12, H = top + cell * names.length + 12;
+    var raw = cm.names;
+    var long = raw.some(function (n) { return String(n).length > 5; });
+    var names = raw.map(function (n, i) { return long ? ('V' + (i + 1)) : short(n, 6); });
+    var cell = 74, labelW = 54, top = 34;
+    var legendLines = [];
+    if (long) {
+      var per = 2;
+      for (var i = 0; i < raw.length; i += per) {
+        legendLines.push(raw.slice(i, i + per).map(function (n, k) { return 'V' + (i + k + 1) + ' ' + n; }).join('　　'));
+      }
+    }
+    var legendH = legendLines.length ? (18 + legendLines.length * 18) : 6;
+    var W = labelW + cell * names.length + 18;
+    var H = top + cell * names.length + legendH;
     function color(v) {
       if (v == null) return '#F1ECE2';
       var a = Math.min(1, Math.abs(v));
-      return v >= 0 ? 'rgba(42,86,74,' + (0.10 + 0.78 * a) + ')' : 'rgba(163,74,60,' + (0.10 + 0.78 * a) + ')';
+      return v >= 0 ? 'rgba(42,86,74,' + (0.12 + 0.76 * a) + ')' : 'rgba(163,74,60,' + (0.12 + 0.76 * a) + ')';
     }
     var cells = '';
     names.forEach(function (rname, ri) {
-      cells += '<text class="tick" x="' + (labelW - 8) + '" y="' + (top + ri * cell + cell / 2 + 3) + '" text-anchor="end">' + esc(rname) + '</text>';
+      cells += '<text class="tick" x="' + (labelW - 10) + '" y="' + (top + ri * cell + cell / 2 + 4) + '" text-anchor="end" font-size="12">' + esc(rname) + '</text>';
       names.forEach(function (cname, ci) {
-        var v = m[ri][ci];
+        var v = cm.matrix[ri][ci];
         var x = labelW + ci * cell, y = top + ri * cell;
-        cells += '<rect x="' + x + '" y="' + y + '" width="' + (cell - 2) + '" height="' + (cell - 2) + '" rx="2" fill="' + color(v) + '"/>';
+        cells += '<rect x="' + x + '" y="' + y + '" width="' + (cell - 3) + '" height="' + (cell - 3) + '" rx="2" fill="' + color(v) + '"/>';
         if (v != null) {
-          cells += '<text x="' + (x + cell / 2 - 1) + '" y="' + (y + cell / 2 + 3) + '" text-anchor="middle" font-size="10.5" fill="' + (Math.abs(v) > 0.45 ? '#F7F4EE' : '#3C4A44') + '">' + v.toFixed(2) + '</text>';
+          cells += '<text x="' + (x + (cell - 3) / 2) + '" y="' + (y + (cell - 3) / 2 + 4) + '" text-anchor="middle" font-size="13.5" fill="' +
+            (Math.abs(v) > 0.45 ? '#F7F4EE' : '#3C4A44') + '">' + v.toFixed(2) + '</text>';
         }
       });
     });
     names.forEach(function (cname, ci) {
-      cells += '<text class="tick" x="' + (labelW + ci * cell + cell / 2) + '" y="' + (top - 10) + '" text-anchor="middle">' + esc(cname) + '</text>';
+      cells += '<text class="tick" x="' + (labelW + ci * cell + (cell - 3) / 2) + '" y="' + (top - 12) + '" text-anchor="middle" font-size="12">' + esc(cname) + '</text>';
+    });
+    legendLines.forEach(function (line, i) {
+      cells += '<text class="tick" x="' + labelW + '" y="' + (top + cell * names.length + 20 + i * 18) + '" font-size="11.5" fill="#8B8878">' + esc(line) + '</text>';
     });
     return svgWrap(W, H, cells);
   }
@@ -1744,82 +1761,63 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       d.innerHTML = '<div class="chart-title">' + esc(title) + '</div><div class="chart-sub">' + esc(sub) + '</div>' + content;
       box.appendChild(d);
     }
-    var primary = r.descriptives[0];
-    if (r.histogram && primary) {
-      card('分布直方图 · ' + r.histogram.column, '虚线为均值位置；柱高为频数', histogramSVG(r.histogram, primary.mean));
+    if (r.histogram) {
+      var d0 = r.descriptives.filter(function (d) { return d.column === r.histogram.column; })[0];
+      card('分布直方图 · ' + r.histogram.column, '柱高为频数；虚线为均值位置', histogramSVG(r.histogram, d0 ? d0.mean : null));
     }
     if (r.groups) {
-      card('组均值与标准差 · ' + r.groups.metric, '按「' + r.groups.by + '」分组，误差线为 ±1 个标准差', groupBarSVG(r.groups));
+      var sub = '按「' + r.groups.by + '」分组，纵轴自 0 起' + (r.groups.rows.length <= 6 ? '，误差线为 ±1 个标准差' : '；分组较多，已省略误差线与数值标签');
+      card('组均值 · ' + r.groups.metric, sub, groupBarSVG(r.groups));
     }
     if (r.scatter) {
-      card('散点与拟合线 · ' + r.scatter.x + ' × ' + r.scatter.y, '黄线为最小二乘拟合，仅用于呈现趋势', scatterSVG(r.scatter));
+      card('散点与拟合线 · ' + r.scatter.x + ' × ' + r.scatter.y, '黄线为最小二乘拟合，仅呈现线性趋势', scatterSVG(r.scatter));
     }
     if (r.corrMatrix && r.corrMatrix.names.length >= 2) {
-      card('相关系数矩阵', '墨绿为正相关，砖红为负相关；数值为 Pearson r', corrMatrixSVG(r.corrMatrix));
+      card('相关系数矩阵', '墨绿为正、砖红为负；数值为 Pearson r，行列名过长时省略', corrMatrixSVG(r.corrMatrix));
+    }
+    if (!box.children.length) {
+      box.innerHTML = '<div class="card"><p class="muted">当前设置未产生图形：请返回上一步选择分布图变量或分组变量。</p></div>';
     }
   }
 
   /* ================= 导出 ================= */
   function buildMarkdown() {
     var r = S.results, L = [];
-    L.push('# 统计分析报告');
+    L.push('# 统计分析结果');
     L.push('');
-    L.push('> 数据文件：' + S.fileName + '　｜　有效样本：' + r.meta.n + '　｜　计划来源：' + (S.planSource === 'ai' ? '模型生成' : '默认方案'));
+    L.push('> 数据文件：' + S.fileName + '　｜　有效样本：' + r.meta.n + '　｜　统计变量：' + r.descriptives.length + ' 个');
     L.push('');
-    L.push('## 一、分析结论');
+    L.push('## 一、描述统计');
     L.push('');
-    S.insights.forEach(function (i, k) { L.push((k + 1) + '. **' + i.title + '**：' + i.text); });
-    L.push('');
-    L.push('## 二、关键指标');
-    L.push('');
-    L.push('| 变量 | 均值 | 标准差 | 变异系数 | 离散程度 |');
-    L.push('| --- | --- | --- | --- | --- |');
-    r.descriptives.slice(0, 3).forEach(function (d) {
-      L.push('| ' + d.column + ' | ' + fmt(d.mean, 2) + ' | ' + fmt(d.sd, 2) + ' | ' + fmt(d.cv, 3) + ' | ' + cvLabel(d.cv) + ' |');
+    L.push('| 变量 | n | 均值 | 标准差 | 中位数 | 最小 | 最大 | 变异系数 | 偏度 | 离群值 |');
+    L.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+    r.descriptives.forEach(function (d) {
+      L.push('| ' + d.column + ' | ' + d.n + ' | ' + fmt(d.mean, 2) + ' | ' + fmt(d.sd, 2) + ' | ' + fmt(d.median, 2) +
+        ' | ' + fmt(d.min, 1) + ' | ' + fmt(d.max, 1) + ' | ' + fmt(d.cv, 3) + ' | ' + fmt(d.skew, 2) + ' | ' + d.outliers + ' |');
     });
     L.push('');
-    if (r.groups) {
-      L.push('### 分组比较（' + r.groups.by + ' × ' + r.groups.metric + '）');
-      L.push('');
-      L.push('| 组别 | 样本量 | 均值 | 标准差 |');
-      L.push('| --- | --- | --- | --- |');
-      r.groups.rows.forEach(function (g) { L.push('| ' + g.group + ' | ' + g.n + ' | ' + fmt(g.mean, 2) + ' | ' + fmt(g.sd, 2) + ' |'); });
-      L.push('');
-      L.push('组间均值差 ' + fmt(r.groups.spread, 2) + '，效应量 d = ' + r.groups.effect + '。');
-      L.push('');
-    }
     if (r.correlations.length) {
-      L.push('### 相关分析');
+      L.push('## 二、相关分析');
       L.push('');
-      L.push('| 变量 A | 变量 B | Pearson r | 样本量 |');
-      L.push('| --- | --- | --- | --- |');
-      r.correlations.forEach(function (c) { L.push('| ' + c.a + ' | ' + c.b + ' | ' + fmt(c.r, 3) + ' | ' + c.n + ' |'); });
+      L.push('| 变量 A | 变量 B | Pearson r | n | 显著性 |');
+      L.push('| --- | --- | --- | --- | --- |');
+      r.correlations.forEach(function (c) { L.push('| ' + c.a + ' | ' + c.b + ' | ' + fmt(c.r, 3) + ' | ' + c.n + ' | ' + (c.significant ? '显著' : '不显著') + ' |'); });
       L.push('');
       L.push('注：相关关系不等同于因果关系。');
       L.push('');
     }
-    L.push('## 三、完整描述统计');
-    L.push('');
-    var names = r.descriptives.map(function (d) { return d.column; });
-    L.push('| 统计量 | ' + names.join(' | ') + ' |');
-    L.push('| --- |' + names.map(function () { return ' --- |'; }).join(''));
-    [['有效样本 n', function (d) { return d.n; }],
-     ['均值', function (d) { return fmt(d.mean, 2); }],
-     ['中位数', function (d) { return fmt(d.median, 2); }],
-     ['标准差', function (d) { return fmt(d.sd, 2); }],
-     ['方差', function (d) { return fmt(d.variance, 2); }],
-     ['最小值', function (d) { return fmt(d.min, 2); }],
-     ['最大值', function (d) { return fmt(d.max, 2); }],
-     ['变异系数', function (d) { return fmt(d.cv, 3); }],
-     ['偏度', function (d) { return fmt(d.skew, 2); }],
-     ['峰度', function (d) { return fmt(d.kurtosis, 2); }],
-     ['离群值个数', function (d) { return d.outliers; }]
-    ].forEach(function (row) {
-      L.push('| ' + row[0] + ' | ' + r.descriptives.map(function (d) { return row[1](d); }).join(' | ') + ' |');
-    });
-    L.push('');
+    if (r.groups) {
+      L.push('## 三、分组统计（' + r.groups.by + ' × ' + r.groups.metric + '）');
+      L.push('');
+      L.push('| 组别 | n | 均值 | 标准差 |');
+      L.push('| --- | --- | --- | --- |');
+      r.groups.rows.forEach(function (g) { L.push('| ' + g.group + ' | ' + g.n + ' | ' + fmt(g.mean, 2) + ' | ' + fmt(g.sd, 2) + ' |'); });
+      L.push('');
+      L.push('组间均值差 ' + fmt(r.groups.spread, 2) + (r.groups.effect != null ? '，效应量 d = ' + fmt(r.groups.effect, 2) : '') + '。');
+      L.push('');
+    }
     if (S.advice) {
-      L.push('## 四、模型解读');
+      L.push('## 四、模型建议');
       L.push('');
       L.push(S.advice);
       L.push('');
@@ -1868,73 +1866,56 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
     $$('[data-goto]').forEach(function (b) { b.addEventListener('click', function () { goto(Number(b.getAttribute('data-goto'))); }); });
 
-    $$('#planMode .seg').forEach(function (b) {
-      b.addEventListener('click', function () { setPlanMode(b.getAttribute('data-mode')); });
-    });
-    $('#copyPlanPrompt').addEventListener('click', function () { copyText($('#planPromptPreview')._prompt || ''); });
-    $('#togglePlanPrompt').addEventListener('click', function () {
+    $('#togglePrompt').addEventListener('click', function () {
       var p = $('#planPromptPreview');
       p.hidden = !p.hidden;
       this.textContent = p.hidden ? '查看提示词' : '收起提示词';
     });
+    $('#copyPlanPrompt').addEventListener('click', function () { copyText($('#planPromptPreview')._prompt || ''); });
     $('#applyPlan').addEventListener('click', function () {
       var t = $('#planInput').value.trim();
       if (!t) { toast('请先粘贴模型返回内容'); return; }
       applyPlanText(t);
-    });
-    $('#useDefault').addEventListener('click', function () {
-      S.plan = StatEngine.defaultPlan(S.prof); S.planSource = 'rule'; S.warnings = [];
-      renderPlan(); toast('已采用默认方案');
     });
     $('#runPlanAI').addEventListener('click', async function () {
       var btn = this; btn.disabled = true; btn.textContent = '请求中…';
       try {
         var txt = await callLLM($('#planPromptPreview')._prompt, 0.1);
         $('#planInput').value = txt;
-        if (!applyPlanText(txt)) setPlanMode('copy');
+        applyPlanText(txt);
       } catch (e) {
         toast('调用失败：' + e.message);
-        setPlanMode('copy');
-        $('#planWarn').textContent = '直连失败（' + e.message + '）。已切换至“复制提示词”，或检查模型设置。';
-      } finally { btn.disabled = false; btn.textContent = '生成分析计划'; }
+      } finally { btn.disabled = false; btn.textContent = '模型推荐方案'; }
     });
 
     $('#computeBtn').addEventListener('click', compute);
 
-    $$('#concMode .seg').forEach(function (b) {
-      b.addEventListener('click', function () {
-        $$('#concMode .seg').forEach(function (x) { x.classList.toggle('active', x === b); });
-        var ai = b.getAttribute('data-conc') === 'ai';
-        $('#insightList').hidden = ai;
-        $('#aiPanel').hidden = !ai;
-      });
-    });
-    $('#copyAdvicePrompt').addEventListener('click', function () { copyText(StatEngine.buildAdvicePrompt(S.results, S.prof)); });
-    $('#toggleAdviceInput').addEventListener('click', function () {
+    $('#toggleAdvice').addEventListener('click', function () {
       var ta = $('#adviceInput'), row = $('#applyAdviceRow');
       ta.hidden = !ta.hidden; row.hidden = ta.hidden;
       this.textContent = ta.hidden ? '粘贴模型输出' : '收起';
     });
+    $('#copyAdvicePrompt').addEventListener('click', function () { copyText(StatEngine.buildAdvicePrompt(S.results, S.prof)); });
     $('#applyAdvice').addEventListener('click', function () {
       var t = $('#adviceInput').value.trim();
       if (!t) { toast('请先粘贴模型输出'); return; }
-      S.advice = t; $('#aiAdvice').textContent = t; toast('已显示模型解读');
+      S.advice = t; $('#aiAdvice').textContent = t; toast('已显示模型建议');
     });
     $('#runAdviceAI').addEventListener('click', async function () {
       var btn = this; btn.disabled = true; btn.textContent = '请求中…';
       try {
         var txt = await callLLM(StatEngine.buildAdvicePrompt(S.results, S.prof), 0.4);
         S.advice = txt; $('#adviceInput').value = txt; $('#aiAdvice').textContent = txt;
-        toast('模型解读已生成');
+        toast('模型建议已生成');
       } catch (e) {
         toast('调用失败：' + e.message);
-        $('#aiAdvice').textContent = '直连失败（' + e.message + '）。可点击“复制提示词”，在其他平台生成后粘贴回来。';
-      } finally { btn.disabled = false; btn.textContent = '生成模型解读'; }
+        $('#aiAdvice').textContent = '调用失败（' + e.message + '）。可点击“复制提示词”，在其他平台生成后粘贴回来。';
+      } finally { btn.disabled = false; btn.textContent = '生成建议'; }
     });
 
-    $('#exportMd').addEventListener('click', function () { download('统计分析报告.md', buildMarkdown()); });
+    $('#exportMd').addEventListener('click', function () { download('统计分析结果.md', buildMarkdown()); });
     $('#restart').addEventListener('click', function () {
-      S = { fileName: '', headers: [], rows: [], prof: null, clean: null, plan: null, planSource: 'rule', results: null, insights: [], advice: '', warnings: [] };
+      S = { fileName: '', headers: [], rows: [], prof: null, clean: null, sel: { metrics: [], group: '', metric: '', corr: true, hist: '' }, plan: null, planSource: 'user', results: null, advice: '' };
       goto(1);
     });
 
@@ -1959,31 +1940,17 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     loadCfg();
     renderSamples();
     bind();
-    setPlanMode('api');
     try {
       var qp = new URLSearchParams(location.search);
       var demo = qp.get('demo');
       var step = Number(qp.get('step') || 2);
-      if (qp.get('planmode') === 'copy' || qp.get('planmode') === 'default') {
-        setTimeout(function () { setPlanMode(qp.get('planmode')); }, 60);
-      }
       if (demo && window.SL_SAMPLES && window.SL_SAMPLES[demo - 1]) {
         setTimeout(function () {
           var s = window.SL_SAMPLES[demo - 1];
           var t = StatEngine.parseCSV(s.text);
           S.fileName = s.name + '.csv';
           start(t.headers, t.rows);
-          if (qp.get('planmode') === 'copy' || qp.get('planmode') === 'default') {
-            setTimeout(function () { setPlanMode(qp.get('planmode')); }, 60);
-          }
-          if (step >= 3) {
-            setTimeout(function () {
-              compute();
-              if (qp.get('open') === 'detail') {
-                setTimeout(function () { var d = document.querySelector('.detail'); if (d) d.open = true; }, 120);
-              }
-            }, 160);
-          }
+          if (step >= 3) setTimeout(compute, 160);
         }, 120);
       }
     } catch (e) { }

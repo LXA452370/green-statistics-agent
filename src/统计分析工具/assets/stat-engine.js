@@ -213,7 +213,9 @@
   function defaultPlan(prof) {
     var nums = prof.numeric.slice(0, 4);
     var PREFER = /(部门|班级|地区|区域|城市|门店|渠道|类别|分组|团队|科室|行业|产品线)/;
-    var cats = prof.columns.filter(function (c) { return c.type === 'categorical' && !c.idLike; })
+    var cats = prof.columns.filter(function (c) {
+      return c.type === 'categorical' && !c.idLike && c.unique >= 2 && c.unique <= 10;
+    })
       .map(function (c) { return c.name; })
       .sort(function (a, b) {
         var pa = PREFER.test(a) ? 0 : 1, pb = PREFER.test(b) ? 0 : 1;
@@ -259,8 +261,11 @@
       return out;
     }
 
-    var idSet = {};
-    prof.columns.forEach(function (c) { if (c.idLike) idSet[c.name] = 1; });
+    var idSet = {}, highCard = {};
+    prof.columns.forEach(function (c) {
+      if (c.idLike) idSet[c.name] = 1;
+      if (c.type === 'categorical' && c.unique > 12) highCard[c.name] = 1;
+    });
 
     var plan = { source: 'ai', title: typeof raw.title === 'string' ? raw.title.slice(0, 40) : def.title };
 
@@ -270,12 +275,12 @@
     plan.metrics = plan.descriptives.slice();
 
     var gb = raw.groupBy;
-    if (typeof gb === 'string' && catSet[gb] && !idSet[gb]) plan.groupBy = gb;
+    if (typeof gb === 'string' && catSet[gb] && !idSet[gb] && !highCard[gb]) plan.groupBy = gb;
     else { if (gb) warnings.push('分组列不合法，已忽略："' + gb + '"'); plan.groupBy = def.groupBy; }
 
     if (raw.groupCompare && typeof raw.groupCompare === 'object') {
       var by = raw.groupCompare.by, metric = raw.groupCompare.metric;
-      if (catSet[by] && numSet[metric] && !idSet[by]) plan.groupCompare = { by: by, metric: metric };
+      if (catSet[by] && numSet[metric] && !idSet[by] && !highCard[by]) plan.groupCompare = { by: by, metric: metric };
       else { warnings.push('分组比较配置不合法，已改为默认'); plan.groupCompare = def.groupCompare; }
     } else plan.groupCompare = def.groupCompare;
 
@@ -297,7 +302,7 @@
 
     plan.frequency = [];
     (Array.isArray(raw.frequency) ? raw.frequency : []).forEach(function (c) {
-      if (catSet[c] && !idSet[c] && plan.frequency.indexOf(c) < 0 && plan.frequency.length < 2) plan.frequency.push(c);
+      if (catSet[c] && !idSet[c] && !highCard[c] && plan.frequency.indexOf(c) < 0 && plan.frequency.length < 2) plan.frequency.push(c);
       else if (c) warnings.push('忽略不合法频数列："' + c + '"');
     });
     if (!plan.frequency.length) plan.frequency = def.frequency;
@@ -526,7 +531,7 @@
   }
 
   /* ---------------- 8. 给大模型的两段提示词 ---------------- */
-  function buildPlanPrompt(prof, sampleRows, fileName) {
+  function buildPlanPrompt(prof, sampleRows, fileName, pool) {
     var colLines = prof.columns.map(function (c) {
       return '- ' + c.name + '：' + (c.type === 'numeric' ? '数值型' : '类别型') +
         (c.idLike ? '（标识列，不要用于分组）' : '') +
@@ -543,6 +548,8 @@
       colLines,
       '【前几行样例】',
       sample,
+      '',
+      (pool && pool.length ? '【用户已选定的分析变量】' + pool.join('、') + '（仅可从中选择，不得引入其他变量）' : ''),
       '',
       '【可用的统计动作】（只能从这里选，不能自创）',
       '1) descriptives：对数值列做描述统计（均值、中位数、标准差、方差、最值、四分位、偏度、峰度、异常值）',
