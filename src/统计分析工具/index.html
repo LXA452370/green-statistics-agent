@@ -30,27 +30,33 @@
 
   <!-- ============ 1 导入 ============ -->
   <section class="panel" data-panel="1">
-    <div class="card import-card">
-      <div class="card-head">
-        <h2>导入数据</h2>
-        <span class="hint">.xlsx / .csv　·　首行为变量名</span>
-      </div>
-      <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
+    <div class="import-grid">
+      <div class="card drop-card">
+        <div class="card-head">
+          <h2>导入数据</h2>
+          <span class="hint">.xlsx / .csv　·　首行为变量名</span>
+        </div>
+        <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
 
-      <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
-        <div class="dz-icon">＋</div>
-        <p class="dz-title">点击选择文件，或拖拽至此</p>
-        <p class="dz-sub">单表数据，建议 5000 行以内</p>
-        <button class="btn ghost small" id="pickBtn" type="button">选择文件</button>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
+          <div class="dz-icon">＋</div>
+          <p class="dz-title">点击选择文件，或拖拽至此</p>
+          <p class="dz-sub">单表数据，建议 5000 行以内</p>
+          <button class="btn small" id="pickBtn" type="button">选择文件</button>
+        </div>
+
+        <p class="fineprint">统计量与图形由程序计算，可复现、可核对；模型仅提供方案建议与文字解读，不参与数值计算。</p>
       </div>
 
-      <div class="sample-block">
-        <div class="block-label">示例数据</div>
-        <div class="sample-grid" id="sampleList"></div>
+      <div class="card sample-card">
+        <div class="card-head">
+          <h3>示例数据</h3>
+          <span class="hint">点击直接载入</span>
+        </div>
+        <div id="sampleList" class="sample-list"></div>
+        <p class="fineprint">示例均为模拟数据，用于验证缺失值、离群值与相关分析的呈现方式。</p>
       </div>
-
-      <p class="fineprint">统计量与图形由程序计算，可复现、可核对；分析结论可选由语言模型生成，模型不参与数值计算。</p>
     </div>
   </section>
 
@@ -64,55 +70,64 @@
       <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
-    <div class="card">
-      <div class="card-head">
-        <h3>变量清单</h3>
-        <span class="hint">由程序识别，非模型推断</span>
-      </div>
-      <div class="table-wrap"><table id="profileTable"></table></div>
-      <p class="fineprint" id="cleanNote"></p>
-    </div>
-
     <div class="plan-grid">
       <div class="card">
-        <div class="card-head"><h3>确定统计方案</h3></div>
-        <div class="segmented" id="planMode">
-          <button class="seg active" data-mode="api">模型直连</button>
-          <button class="seg" data-mode="copy">复制提示词</button>
-          <button class="seg" data-mode="default">默认方案</button>
+        <div class="card-head">
+          <h3>变量清单</h3>
+          <span class="hint">由程序识别</span>
         </div>
-
-        <div class="mode-panel" data-mode="api">
-          <p class="muted">使用已配置的模型接口，由模型依据变量结构确定本次输出的统计量与分组、相关组合。</p>
-          <div class="actions"><button class="btn small" id="runPlanAI">生成分析计划</button></div>
-          <p class="fineprint" id="apiHintPlan"></p>
-        </div>
-
-        <div class="mode-panel" data-mode="copy" hidden>
-          <p class="muted">复制提示词至任一对话式模型平台，将其返回的 JSON 粘贴回填。</p>
-          <div class="actions">
-            <button class="btn ghost small" id="copyPlanPrompt">复制提示词</button>
-            <button class="link-btn" id="togglePlanPrompt" type="button">查看提示词</button>
-          </div>
-          <pre class="prompt" id="planPromptPreview" hidden></pre>
-          <textarea id="planInput" rows="5" placeholder="粘贴模型返回的 JSON"></textarea>
-          <div class="actions"><button class="btn small" id="applyPlan">解析并应用</button></div>
-        </div>
-
-        <div class="mode-panel" data-mode="default" hidden>
-          <p class="muted">不调用模型，按变量类型自动确定统计方案，适用于快速复核或无网络环境。</p>
-          <div class="actions"><button class="btn small" id="useDefault">采用默认方案</button></div>
-        </div>
+        <div class="table-wrap"><table id="profileTable"></table></div>
+        <p class="fineprint" id="cleanNote"></p>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <h3>计划内容</h3>
-          <span class="hint" id="planSourceTag">默认方案</span>
+          <h3>分析设置</h3>
+          <span class="hint">自行选择参与分析的变量</span>
         </div>
+
+        <div class="field-block">
+          <div class="field-label">数值变量 <span>不参与分析的变量不会被统计</span></div>
+          <div id="numVars" class="var-chips"></div>
+        </div>
+
+        <div class="field-row">
+          <label class="field"><span>分组变量</span>
+            <select id="groupVar"></select>
+          </label>
+          <label class="field"><span>分组比较指标</span>
+            <select id="groupMetric"></select>
+          </label>
+          <label class="field"><span>分布图变量</span>
+            <select id="histVar"></select>
+          </label>
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" id="doCorr" checked />
+          <span>计算相关系数（对所选变量两两求 Pearson r）</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="plan-grid">
+      <div class="card">
+        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
         <div class="chips" id="planChips"></div>
         <p class="fineprint" id="planWarn"></p>
-        <p class="fineprint">计划仅允许出现数据中实际存在的变量与预设统计动作，其余内容将被丢弃。</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>方案辅助（可选）</h3><span class="hint">语言模型</span></div>
+        <p class="muted">可在当前变量范围内请模型给出分析方案，或复制提示词到其他平台。</p>
+        <div class="actions">
+          <button class="btn small" id="runPlanAI">模型推荐方案</button>
+          <button class="btn ghost small" id="copyPlanPrompt">复制提示词</button>
+          <button class="link-btn" id="togglePrompt" type="button">查看提示词</button>
+        </div>
+        <pre class="prompt" id="planPromptPreview" hidden></pre>
+        <textarea id="planInput" rows="4" placeholder="粘贴模型返回的 JSON（可选）"></textarea>
+        <div class="actions"><button class="btn ghost small" id="applyPlan">应用模型方案</button></div>
       </div>
     </div>
 
@@ -130,78 +145,46 @@
         <p class="muted" id="resultMeta">—</p>
       </div>
       <div class="actions">
-        <button class="btn ghost small" id="exportMd">导出报告</button>
+        <button class="btn ghost small" id="exportMd">导出结果</button>
         <button class="btn ghost small" data-goto="2">返回计划</button>
       </div>
     </div>
 
-    <!-- 结论优先 -->
-    <div class="card conclusion">
-      <div class="card-head">
-        <h3>分析结论</h3>
-        <div class="segmented tiny" id="concMode">
-          <button class="seg active" data-conc="rule">规则结论</button>
-          <button class="seg" data-conc="ai">模型解读</button>
-        </div>
-      </div>
-
-      <div id="insightList" class="findings"></div>
-
-      <div id="aiPanel" hidden>
-        <p class="muted">模型仅接收已计算的统计量并组织结论表述，不参与数值计算。</p>
-        <div class="actions">
-          <button class="btn small" id="runAdviceAI">生成模型解读</button>
-          <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
-          <button class="link-btn" id="toggleAdviceInput" type="button">粘贴模型输出</button>
-        </div>
-        <textarea id="adviceInput" rows="4" placeholder="粘贴模型输出" hidden></textarea>
-        <div class="actions" id="applyAdviceRow" hidden><button class="btn small" id="applyAdvice">显示</button></div>
-        <div class="ai-out" id="aiAdvice"></div>
-      </div>
-    </div>
-
-    <!-- 关键指标 -->
-    <div class="key-grid">
-      <div class="card">
-        <div class="card-head"><h3>关键指标</h3><span class="hint">完整统计量见文末</span></div>
-        <div class="table-wrap"><table id="keyTable"></table></div>
-      </div>
-      <div class="card stat">
-        <div class="k-label">组间差异</div>
-        <div class="k-value" id="effectVal">—</div>
-        <div class="k-note" id="effectNote">未执行分组比较</div>
-      </div>
-      <div class="card stat">
-        <div class="k-label">最强相关</div>
-        <div class="k-value" id="corrVal">—</div>
-        <div class="k-note" id="corrNote">未执行相关分析</div>
-      </div>
-    </div>
-
-    <!-- 图表 -->
     <div class="charts" id="charts"></div>
 
-    <!-- 完整数据 -->
-    <details class="card detail">
-      <summary>完整统计结果</summary>
-      <div class="detail-body">
-        <h4>描述统计</h4>
+    <div class="result-grid">
+      <div class="card">
+        <div class="card-head"><h3>描述统计</h3><span class="hint" id="descHint">—</span></div>
         <div class="table-wrap"><table id="descTable"></table></div>
-        <div id="groupBlock" hidden>
-          <h4 id="groupTitle">分组比较</h4>
-          <div class="table-wrap"><table id="groupTable"></table></div>
-          <p class="fineprint" id="groupNote"></p>
-        </div>
-        <div id="corrBlock" hidden>
-          <h4>相关分析</h4>
-          <div class="table-wrap"><table id="corrTable"></table></div>
-        </div>
-        <div id="freqBlock" hidden>
-          <h4>频数分布</h4>
-          <div class="table-wrap"><table id="freqTable"></table></div>
-        </div>
       </div>
-    </details>
+      <div class="card">
+        <div class="card-head"><h3>相关分析</h3><span class="hint">Pearson r</span></div>
+        <div class="table-wrap"><table id="corrTable"></table></div>
+        <p class="fineprint" id="corrNote"></p>
+      </div>
+    </div>
+
+    <div class="card" id="groupCard" hidden>
+      <div class="card-head"><h3>分组统计</h3><span class="hint" id="groupHint">—</span></div>
+      <div class="table-wrap"><table id="groupTable"></table></div>
+      <p class="fineprint" id="groupNote"></p>
+    </div>
+
+    <div class="card ai-card">
+      <div class="card-head">
+        <h3>模型建议</h3>
+        <span class="hint">可选 · 未接入时仅呈现统计结果</span>
+      </div>
+      <p class="muted">统计结果与图形由程序生成；如需具体建议与可执行方案，可调用模型或粘贴外部模型输出。模型只接收已计算的统计量。</p>
+      <div class="actions">
+        <button class="btn small" id="runAdviceAI">生成建议</button>
+        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
+        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
+      </div>
+      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
+      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
+      <div class="ai-out" id="aiAdvice"></div>
+    </div>
 
     <div class="footer-actions">
       <button class="btn ghost" data-goto="2">返回计划</button>
@@ -211,7 +194,7 @@
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。
+  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时，本页只呈现统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
@@ -221,7 +204,7 @@
       <h3>模型设置</h3>
       <span class="hint">OpenAI 兼容接口</span>
     </div>
-    <p class="muted">配置后可直接调用模型生成分析计划与结论。密钥仅保存在本机浏览器，不写入页面源码。</p>
+    <p class="muted">用于生成分析方案建议与文字解读。密钥仅保存在本机浏览器，不写入页面源码。</p>
     <label class="field"><span>接口地址</span><input type="text" id="apiBase" placeholder="https://api.deepseek.com/v1" /></label>
     <label class="field"><span>模型名称</span><input type="text" id="apiModel" placeholder="deepseek-chat" /></label>
     <label class="field"><span>API Key</span><input type="password" id="apiKey" placeholder="sk-..." /></label>
