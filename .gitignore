@@ -1,0 +1,11 @@
+# 依赖与临时文件
+node_modules/
+__pycache__/
+.DS_Store
+Thumbs.db
+
+# 打包产物（源码才是仓库内容）
+*.zip
+
+# 办公软件锁文件
+~$*
