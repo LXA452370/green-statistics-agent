@@ -8,7 +8,22 @@
     plan: null, planSource: 'user', results: null, advice: ''
   };
   var CFG = { base: '', model: '', key: '' };
-  var C = { pine: '#2A564A', brass: '#A98545', clay: '#A34A3C', sage: '#6E817A', line: '#E3DCCE', muted: '#8B8878' };
+
+  function cssVar(name, fallback) {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    } catch (e) { return fallback; }
+  }
+  // 图表配色同样取自 CSS 变量，便于主题切换
+  var C = {
+    pine: cssVar('--chart-1', '#2A564A'),
+    brass: cssVar('--chart-2', '#A98545'),
+    clay: cssVar('--chart-3', '#A34A3C'),
+    sage: cssVar('--chart-4', '#6E817A'),
+    line: cssVar('--line', '#E3DCCE'),
+    muted: cssVar('--chart-4', '#8B8878')
+  };
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
@@ -34,6 +49,14 @@
   function pct(n) { return n == null ? '—' : (Math.round(n * 1000) / 10) + '%'; }
   function short(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n) + '…' : s; }
 
+  function rgba(hex, a) {
+    var h = String(hex || '').replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return 'rgba(42,86,74,' + a + ')';
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
   /* ================= 模型设置 ================= */
   function loadCfg() {
     try { var raw = localStorage.getItem('sl4_llm'); if (raw) CFG = JSON.parse(raw); } catch (e) { }
@@ -50,10 +73,22 @@
   function configured() { return !!(CFG.base && CFG.key); }
   function updateStatus() {
     var el = $('#modelStatus');
-    if (configured()) { el.textContent = '已配置模型'; el.classList.add('on'); }
-    else { el.textContent = '未连接模型'; el.classList.remove('on'); }
-    $('#runPlanAI').disabled = !configured();
-    $('#runAdviceAI').disabled = !configured();
+    var on = configured();
+    el.textContent = on ? '已接入模型' : '未接入模型';
+    el.classList.toggle('on', on);
+    var badge = $('#aiBadge');
+    if (badge) {
+      badge.textContent = on ? '已接入模型' : '未接入模型';
+      badge.classList.toggle('on', on);
+    }
+    var notice = $('#aiNotice');
+    if (notice) {
+      notice.textContent = on
+        ? '已接入模型：可生成分析建议；模型仅读取已计算的统计量，不参与数值计算。未接入时本页只提供统计结果与图形。'
+        : '未接入模型：不生成任何分析结论或建议，仅提供统计结果与图形。';
+    }
+    if ($('#runPlanAI')) $('#runPlanAI').disabled = !on;
+    if ($('#runAdviceAI')) $('#runAdviceAI').disabled = !on;
   }
   function endpoint() {
     var base = (CFG.base || '').replace(/\/+$/, '');
@@ -161,7 +196,7 @@
     var p = S.prof, log = S.clean.log;
     $('#fileMeta').textContent = S.fileName + '　·　' + p.n + ' 行 × ' + p.m + ' 列　·　数值变量 ' + p.numeric.length +
       ' 个，分类变量 ' + p.categorical.length + ' 个　·　可分组变量 ' + groupCandidates().length + ' 个';
-    $('#profileTable').innerHTML = '<thead><tr><th>变量</th><th>类型</th><th>有效样本</th><th>缺失</th><th>取值数</th><th>范围 / 类别</th></tr></thead><tbody>' +
+    $('#profileTable').innerHTML = '<thead><tr><th>变量</th><th>类型</th><th class="num">有效样本</th><th class="num">缺失</th><th class="num">取值数</th><th>范围 / 类别</th></tr></thead><tbody>' +
       p.columns.map(function (c) {
         var info = c.type === 'numeric' ? (c.min + ' — ' + c.max) : c.categories.slice(0, 3).join('、');
         var tag = c.idLike ? '（标识变量）' : (c.type === 'categorical' && c.unique > 10 ? '（取值过多，不可分组）' : '');
@@ -332,7 +367,7 @@
       ' 个　·　' + (r.groups ? '分组：' + r.groups.by : '未分组') + '　·　' + (r.correlations.length ? '相关 ' + r.correlations.length + ' 对' : '未做相关');
     $('#descHint').textContent = '变量 ' + r.descriptives.length + ' 个';
 
-    $('#descTable').innerHTML = '<thead><tr><th>变量</th><th>n</th><th>均值</th><th>标准差</th><th>中位数</th><th>最小</th><th>最大</th><th>变异系数</th><th>偏度</th><th>离群值</th></tr></thead><tbody>' +
+    $('#descTable').innerHTML = '<thead><tr><th>变量</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">中位数</th><th class="num">最小</th><th class="num">最大</th><th class="num">变异系数</th><th class="num">偏度</th><th class="num">离群值</th></tr></thead><tbody>' +
       r.descriptives.map(function (d) {
         return '<tr><td>' + esc(d.column) + '</td><td class="num">' + d.n + '</td><td class="num">' + fmt(d.mean, 2) +
           '</td><td class="num">' + fmt(d.sd, 2) + '</td><td class="num">' + fmt(d.median, 2) +
@@ -342,7 +377,7 @@
       }).join('') + '</tbody>';
 
     if (r.correlations.length) {
-      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th>r</th><th>n</th><th>显著性</th></tr></thead><tbody>' +
+      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th class="num">r</th><th class="num">n</th><th>显著性</th></tr></thead><tbody>' +
         r.correlations.map(function (c) {
           return '<tr><td>' + esc(c.a) + '</td><td>' + esc(c.b) + '</td><td class="num">' + fmt(c.r, 3) +
             '</td><td class="num">' + c.n + '</td><td>' + (c.significant ? '显著' : '不显著') + '</td></tr>';
@@ -356,7 +391,7 @@
     if (r.groups) {
       $('#groupCard').hidden = false;
       $('#groupHint').textContent = r.groups.by + ' × ' + r.groups.metric + '　·　' + r.groups.rows.length + ' 组';
-      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th>n</th><th>均值</th><th>标准差</th><th>最小</th><th>最大</th></tr></thead><tbody>' +
+      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">最小</th><th class="num">最大</th></tr></thead><tbody>' +
         r.groups.rows.map(function (g) {
           return '<tr><td>' + esc(g.group) + '</td><td class="num">' + g.n + '</td><td class="num">' + fmt(g.mean, 2) +
             '</td><td class="num">' + fmt(g.sd, 2) + '</td><td class="num">' + fmt(g.min, 1) + '</td><td class="num">' + fmt(g.max, 1) + '</td></tr>';
@@ -367,6 +402,7 @@
     } else { $('#groupCard').hidden = true; }
 
     $('#aiAdvice').textContent = S.advice || '';
+    updateStatus();
     renderCharts(r);
   }
 
@@ -485,7 +521,7 @@
     function color(v) {
       if (v == null) return '#F1ECE2';
       var a = Math.min(1, Math.abs(v));
-      return v >= 0 ? 'rgba(42,86,74,' + (0.12 + 0.76 * a) + ')' : 'rgba(163,74,60,' + (0.12 + 0.76 * a) + ')';
+      return v >= 0 ? rgba(C.pine, 0.12 + 0.76 * a) : rgba(C.clay, 0.12 + 0.76 * a);
     }
     var cells = '';
     names.forEach(function (rname, ri) {
@@ -530,7 +566,7 @@
       card('散点与拟合线 · ' + r.scatter.x + ' × ' + r.scatter.y, '黄线为最小二乘拟合，仅呈现线性趋势', scatterSVG(r.scatter));
     }
     if (r.corrMatrix && r.corrMatrix.names.length >= 2) {
-      card('相关系数矩阵', '墨绿为正、砖红为负；数值为 Pearson r，行列名过长时省略', corrMatrixSVG(r.corrMatrix));
+      card('相关系数矩阵', '颜色越深相关性越强；正值与负值分色，数值为 Pearson r，行列名过长时省略', corrMatrixSVG(r.corrMatrix));
     }
     if (!box.children.length) {
       box.innerHTML = '<div class="card"><p class="muted">当前设置未产生图形：请返回上一步选择分布图变量或分组变量。</p></div>';

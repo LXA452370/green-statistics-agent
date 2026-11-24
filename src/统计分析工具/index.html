@@ -16,8 +16,8 @@
     </div>
   </div>
   <div class="top-actions">
-    <button class="btn ghost small" id="settingsBtn">模型设置</button>
-    <span class="status" id="modelStatus">未连接模型</span>
+    <button class="btn primary" id="settingsBtn">模型设置</button>
+    <span class="status" id="modelStatus">未接入模型</span>
   </div>
 </header>
 
@@ -70,6 +70,7 @@
       <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
+    <!-- 第一行：变量清单 | 分析设置 -->
     <div class="plan-grid">
       <div class="card">
         <div class="card-head">
@@ -110,13 +111,8 @@
       </div>
     </div>
 
+    <!-- 第二行：方案辅助 | 计划预览（与分析设置上下对齐） -->
     <div class="plan-grid">
-      <div class="card">
-        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
-        <div class="chips" id="planChips"></div>
-        <p class="fineprint" id="planWarn"></p>
-      </div>
-
       <div class="card">
         <div class="card-head"><h3>方案辅助（可选）</h3><span class="hint">语言模型</span></div>
         <p class="muted">可在当前变量范围内请模型给出分析方案，或复制提示词到其他平台。</p>
@@ -128,6 +124,13 @@
         <pre class="prompt" id="planPromptPreview" hidden></pre>
         <textarea id="planInput" rows="4" placeholder="粘贴模型返回的 JSON（可选）"></textarea>
         <div class="actions"><button class="btn ghost small" id="applyPlan">应用模型方案</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
+        <div class="chips" id="planChips"></div>
+        <p class="fineprint" id="planWarn"></p>
+        <p class="fineprint">计划变更会同步反映在上方“分析设置”中；执行时严格按该计划计算。</p>
       </div>
     </div>
 
@@ -150,6 +153,23 @@
       </div>
     </div>
 
+    <!-- 模型建议置顶 -->
+    <div class="card ai-card">
+      <div class="card-head">
+        <h3>分析建议</h3>
+        <span class="badge" id="aiBadge">未接入模型</span>
+      </div>
+      <div class="notice" id="aiNotice">未接入模型：不生成任何分析结论或建议，仅提供统计结果与图形。</div>
+      <div class="actions">
+        <button class="btn small" id="runAdviceAI">生成建议</button>
+        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
+        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
+      </div>
+      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
+      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
+      <div class="ai-out" id="aiAdvice"></div>
+    </div>
+
     <div class="charts" id="charts"></div>
 
     <div class="result-grid">
@@ -170,22 +190,6 @@
       <p class="fineprint" id="groupNote"></p>
     </div>
 
-    <div class="card ai-card">
-      <div class="card-head">
-        <h3>模型建议</h3>
-        <span class="hint">可选 · 未接入时仅呈现统计结果</span>
-      </div>
-      <p class="muted">统计结果与图形由程序生成；如需具体建议与可执行方案，可调用模型或粘贴外部模型输出。模型只接收已计算的统计量。</p>
-      <div class="actions">
-        <button class="btn small" id="runAdviceAI">生成建议</button>
-        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
-        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
-      </div>
-      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
-      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
-      <div class="ai-out" id="aiAdvice"></div>
-    </div>
-
     <div class="footer-actions">
       <button class="btn ghost" data-goto="2">返回计划</button>
       <button class="btn primary" id="restart">更换数据</button>
@@ -194,7 +198,7 @@
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时，本页只呈现统计结果与图形。
+  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
