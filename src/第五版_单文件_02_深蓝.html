@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 经管数据统计分析 v4.0 单文件版 -->
+<!-- 经管数据统计分析 v5.0 单文件版 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -30,6 +30,10 @@
   --line-2:#F0EBE1;
   --radius:10px;
   --shadow:0 1px 0 rgba(30,42,38,.04);
+  --chart-1:#2A564A;
+  --chart-2:#A98545;
+  --chart-3:#A34A3C;
+  --chart-4:#7C8F86;
   --sans:"Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:Consolas,"SF Mono",ui-monospace,monospace;
 }
@@ -224,6 +228,55 @@ svg.chart{width:100%;height:auto;display:block}
   .charts{grid-template-columns:1fr 1fr}
 }
 
+
+/* ================= v5 增补：模型入口强化 / 表头对齐 / 提示条 ================= */
+.top-actions .btn.primary{
+  font-size:15px;padding:11px 22px;border-radius:10px;letter-spacing:.05em;
+  box-shadow:0 2px 0 rgba(21,47,41,.22);
+}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:7px 14px}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:#B9B2A4;display:block}
+.status.on::before{background:#3E7C62}
+.badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#FCFAF6;white-space:nowrap}
+.badge.on{color:var(--pine);border-color:#C9D8CF;background:var(--pine-l)}
+.notice{
+  border-left:3px solid var(--brass);background:var(--brass-l);color:#6B5527;
+  font-size:13.5px;line-height:1.7;padding:10px 14px;border-radius:0 8px 8px 0;margin:2px 0 8px;
+}
+th.num{text-align:right}
+th,td{vertical-align:middle}
+.ai-card .actions{margin-top:6px}
+
+
+/* v5：hidden 属性优先，避免被 display:flex 覆盖 */
+[hidden]{display:none!important}
+
+</style>
+<style id="theme-override">
+:root{
+  --paper:#F5F7FA;
+  --surface:#FFFFFF;
+  --ink:#182430;
+  --ink-2:#33414F;
+  --muted:#5F6B78;
+  --pine:#14365C;
+  --pine-d:#0C2743;
+  --pine-l:#E8EEF6;
+  --brass:#B08D57;
+  --brass-d:#8E6E3E;
+  --brass-l:#F3ECDD;
+  --clay:#A2453C;
+  --clay-l:#F8E9E7;
+  --sage:#5C6B7A;
+  --line:#DCE3EC;
+  --line-2:#EEF2F7;
+  --chart-1:#2F5687;
+  --chart-2:#B08D57;
+  --chart-3:#A2453C;
+  --chart-4:#7C8A99;
+}
+body{background:var(--paper);color:var(--ink)}
+h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{font-family:"Songti SC","STSong","SimSun",serif;}
 </style>
 </head>
 <body>
@@ -236,8 +289,8 @@ svg.chart{width:100%;height:auto;display:block}
     </div>
   </div>
   <div class="top-actions">
-    <button class="btn ghost small" id="settingsBtn">模型设置</button>
-    <span class="status" id="modelStatus">未连接模型</span>
+    <button class="btn primary" id="settingsBtn">模型设置</button>
+    <span class="status" id="modelStatus">未接入模型</span>
   </div>
 </header>
 
@@ -290,6 +343,7 @@ svg.chart{width:100%;height:auto;display:block}
       <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
+    <!-- 第一行：变量清单 | 分析设置 -->
     <div class="plan-grid">
       <div class="card">
         <div class="card-head">
@@ -330,13 +384,8 @@ svg.chart{width:100%;height:auto;display:block}
       </div>
     </div>
 
+    <!-- 第二行：方案辅助 | 计划预览（与分析设置上下对齐） -->
     <div class="plan-grid">
-      <div class="card">
-        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
-        <div class="chips" id="planChips"></div>
-        <p class="fineprint" id="planWarn"></p>
-      </div>
-
       <div class="card">
         <div class="card-head"><h3>方案辅助（可选）</h3><span class="hint">语言模型</span></div>
         <p class="muted">可在当前变量范围内请模型给出分析方案，或复制提示词到其他平台。</p>
@@ -348,6 +397,13 @@ svg.chart{width:100%;height:auto;display:block}
         <pre class="prompt" id="planPromptPreview" hidden></pre>
         <textarea id="planInput" rows="4" placeholder="粘贴模型返回的 JSON（可选）"></textarea>
         <div class="actions"><button class="btn ghost small" id="applyPlan">应用模型方案</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>计划预览</h3><span class="hint" id="planSourceTag">按当前设置</span></div>
+        <div class="chips" id="planChips"></div>
+        <p class="fineprint" id="planWarn"></p>
+        <p class="fineprint">计划变更会同步反映在上方“分析设置”中；执行时严格按该计划计算。</p>
       </div>
     </div>
 
@@ -370,6 +426,23 @@ svg.chart{width:100%;height:auto;display:block}
       </div>
     </div>
 
+    <!-- 模型建议置顶 -->
+    <div class="card ai-card">
+      <div class="card-head">
+        <h3>分析建议</h3>
+        <span class="badge" id="aiBadge">未接入模型</span>
+      </div>
+      <div class="notice" id="aiNotice">未接入模型：不生成任何分析结论或建议，仅提供统计结果与图形。</div>
+      <div class="actions">
+        <button class="btn small" id="runAdviceAI">生成建议</button>
+        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
+        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
+      </div>
+      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
+      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
+      <div class="ai-out" id="aiAdvice"></div>
+    </div>
+
     <div class="charts" id="charts"></div>
 
     <div class="result-grid">
@@ -390,22 +463,6 @@ svg.chart{width:100%;height:auto;display:block}
       <p class="fineprint" id="groupNote"></p>
     </div>
 
-    <div class="card ai-card">
-      <div class="card-head">
-        <h3>模型建议</h3>
-        <span class="hint">可选 · 未接入时仅呈现统计结果</span>
-      </div>
-      <p class="muted">统计结果与图形由程序生成；如需具体建议与可执行方案，可调用模型或粘贴外部模型输出。模型只接收已计算的统计量。</p>
-      <div class="actions">
-        <button class="btn small" id="runAdviceAI">生成建议</button>
-        <button class="btn ghost small" id="copyAdvicePrompt">复制提示词</button>
-        <button class="link-btn" id="toggleAdvice" type="button">粘贴模型输出</button>
-      </div>
-      <textarea id="adviceInput" rows="5" placeholder="粘贴模型给出的建议" hidden></textarea>
-      <div class="actions" id="applyAdviceRow" hidden><button class="btn ghost small" id="applyAdvice">显示</button></div>
-      <div class="ai-out" id="aiAdvice"></div>
-    </div>
-
     <div class="footer-actions">
       <button class="btn ghost" data-goto="2">返回计划</button>
       <button class="btn primary" id="restart">更换数据</button>
@@ -414,7 +471,7 @@ svg.chart{width:100%;height:auto;display:block}
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时，本页只呈现统计结果与图形。
+  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
@@ -1251,7 +1308,22 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     plan: null, planSource: 'user', results: null, advice: ''
   };
   var CFG = { base: '', model: '', key: '' };
-  var C = { pine: '#2A564A', brass: '#A98545', clay: '#A34A3C', sage: '#6E817A', line: '#E3DCCE', muted: '#8B8878' };
+
+  function cssVar(name, fallback) {
+    try {
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    } catch (e) { return fallback; }
+  }
+  // 图表配色同样取自 CSS 变量，便于主题切换
+  var C = {
+    pine: cssVar('--chart-1', '#2A564A'),
+    brass: cssVar('--chart-2', '#A98545'),
+    clay: cssVar('--chart-3', '#A34A3C'),
+    sage: cssVar('--chart-4', '#6E817A'),
+    line: cssVar('--line', '#E3DCCE'),
+    muted: cssVar('--chart-4', '#8B8878')
+  };
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
@@ -1277,6 +1349,14 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   function pct(n) { return n == null ? '—' : (Math.round(n * 1000) / 10) + '%'; }
   function short(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n) + '…' : s; }
 
+  function rgba(hex, a) {
+    var h = String(hex || '').replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return 'rgba(42,86,74,' + a + ')';
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
   /* ================= 模型设置 ================= */
   function loadCfg() {
     try { var raw = localStorage.getItem('sl4_llm'); if (raw) CFG = JSON.parse(raw); } catch (e) { }
@@ -1293,10 +1373,22 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   function configured() { return !!(CFG.base && CFG.key); }
   function updateStatus() {
     var el = $('#modelStatus');
-    if (configured()) { el.textContent = '已配置模型'; el.classList.add('on'); }
-    else { el.textContent = '未连接模型'; el.classList.remove('on'); }
-    $('#runPlanAI').disabled = !configured();
-    $('#runAdviceAI').disabled = !configured();
+    var on = configured();
+    el.textContent = on ? '已接入模型' : '未接入模型';
+    el.classList.toggle('on', on);
+    var badge = $('#aiBadge');
+    if (badge) {
+      badge.textContent = on ? '已接入模型' : '未接入模型';
+      badge.classList.toggle('on', on);
+    }
+    var notice = $('#aiNotice');
+    if (notice) {
+      notice.textContent = on
+        ? '已接入模型：可生成分析建议；模型仅读取已计算的统计量，不参与数值计算。未接入时本页只提供统计结果与图形。'
+        : '未接入模型：不生成任何分析结论或建议，仅提供统计结果与图形。';
+    }
+    if ($('#runPlanAI')) $('#runPlanAI').disabled = !on;
+    if ($('#runAdviceAI')) $('#runAdviceAI').disabled = !on;
   }
   function endpoint() {
     var base = (CFG.base || '').replace(/\/+$/, '');
@@ -1404,7 +1496,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     var p = S.prof, log = S.clean.log;
     $('#fileMeta').textContent = S.fileName + '　·　' + p.n + ' 行 × ' + p.m + ' 列　·　数值变量 ' + p.numeric.length +
       ' 个，分类变量 ' + p.categorical.length + ' 个　·　可分组变量 ' + groupCandidates().length + ' 个';
-    $('#profileTable').innerHTML = '<thead><tr><th>变量</th><th>类型</th><th>有效样本</th><th>缺失</th><th>取值数</th><th>范围 / 类别</th></tr></thead><tbody>' +
+    $('#profileTable').innerHTML = '<thead><tr><th>变量</th><th>类型</th><th class="num">有效样本</th><th class="num">缺失</th><th class="num">取值数</th><th>范围 / 类别</th></tr></thead><tbody>' +
       p.columns.map(function (c) {
         var info = c.type === 'numeric' ? (c.min + ' — ' + c.max) : c.categories.slice(0, 3).join('、');
         var tag = c.idLike ? '（标识变量）' : (c.type === 'categorical' && c.unique > 10 ? '（取值过多，不可分组）' : '');
@@ -1575,7 +1667,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       ' 个　·　' + (r.groups ? '分组：' + r.groups.by : '未分组') + '　·　' + (r.correlations.length ? '相关 ' + r.correlations.length + ' 对' : '未做相关');
     $('#descHint').textContent = '变量 ' + r.descriptives.length + ' 个';
 
-    $('#descTable').innerHTML = '<thead><tr><th>变量</th><th>n</th><th>均值</th><th>标准差</th><th>中位数</th><th>最小</th><th>最大</th><th>变异系数</th><th>偏度</th><th>离群值</th></tr></thead><tbody>' +
+    $('#descTable').innerHTML = '<thead><tr><th>变量</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">中位数</th><th class="num">最小</th><th class="num">最大</th><th class="num">变异系数</th><th class="num">偏度</th><th class="num">离群值</th></tr></thead><tbody>' +
       r.descriptives.map(function (d) {
         return '<tr><td>' + esc(d.column) + '</td><td class="num">' + d.n + '</td><td class="num">' + fmt(d.mean, 2) +
           '</td><td class="num">' + fmt(d.sd, 2) + '</td><td class="num">' + fmt(d.median, 2) +
@@ -1585,7 +1677,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       }).join('') + '</tbody>';
 
     if (r.correlations.length) {
-      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th>r</th><th>n</th><th>显著性</th></tr></thead><tbody>' +
+      $('#corrTable').innerHTML = '<thead><tr><th>变量 A</th><th>变量 B</th><th class="num">r</th><th class="num">n</th><th>显著性</th></tr></thead><tbody>' +
         r.correlations.map(function (c) {
           return '<tr><td>' + esc(c.a) + '</td><td>' + esc(c.b) + '</td><td class="num">' + fmt(c.r, 3) +
             '</td><td class="num">' + c.n + '</td><td>' + (c.significant ? '显著' : '不显著') + '</td></tr>';
@@ -1599,7 +1691,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     if (r.groups) {
       $('#groupCard').hidden = false;
       $('#groupHint').textContent = r.groups.by + ' × ' + r.groups.metric + '　·　' + r.groups.rows.length + ' 组';
-      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th>n</th><th>均值</th><th>标准差</th><th>最小</th><th>最大</th></tr></thead><tbody>' +
+      $('#groupTable').innerHTML = '<thead><tr><th>组别</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">最小</th><th class="num">最大</th></tr></thead><tbody>' +
         r.groups.rows.map(function (g) {
           return '<tr><td>' + esc(g.group) + '</td><td class="num">' + g.n + '</td><td class="num">' + fmt(g.mean, 2) +
             '</td><td class="num">' + fmt(g.sd, 2) + '</td><td class="num">' + fmt(g.min, 1) + '</td><td class="num">' + fmt(g.max, 1) + '</td></tr>';
@@ -1610,6 +1702,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     } else { $('#groupCard').hidden = true; }
 
     $('#aiAdvice').textContent = S.advice || '';
+    updateStatus();
     renderCharts(r);
   }
 
@@ -1728,7 +1821,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     function color(v) {
       if (v == null) return '#F1ECE2';
       var a = Math.min(1, Math.abs(v));
-      return v >= 0 ? 'rgba(42,86,74,' + (0.12 + 0.76 * a) + ')' : 'rgba(163,74,60,' + (0.12 + 0.76 * a) + ')';
+      return v >= 0 ? rgba(C.pine, 0.12 + 0.76 * a) : rgba(C.clay, 0.12 + 0.76 * a);
     }
     var cells = '';
     names.forEach(function (rname, ri) {
@@ -1773,7 +1866,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       card('散点与拟合线 · ' + r.scatter.x + ' × ' + r.scatter.y, '黄线为最小二乘拟合，仅呈现线性趋势', scatterSVG(r.scatter));
     }
     if (r.corrMatrix && r.corrMatrix.names.length >= 2) {
-      card('相关系数矩阵', '墨绿为正、砖红为负；数值为 Pearson r，行列名过长时省略', corrMatrixSVG(r.corrMatrix));
+      card('相关系数矩阵', '颜色越深相关性越强；正值与负值分色，数值为 Pearson r，行列名过长时省略', corrMatrixSVG(r.corrMatrix));
     }
     if (!box.children.length) {
       box.innerHTML = '<div class="card"><p class="muted">当前设置未产生图形：请返回上一步选择分布图变量或分组变量。</p></div>';

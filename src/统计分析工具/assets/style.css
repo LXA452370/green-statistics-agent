@@ -22,6 +22,10 @@
   --line-2:#F0EBE1;
   --radius:10px;
   --shadow:0 1px 0 rgba(30,42,38,.04);
+  --chart-1:#2A564A;
+  --chart-2:#A98545;
+  --chart-3:#A34A3C;
+  --chart-4:#7C8F86;
   --sans:"Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:Consolas,"SF Mono",ui-monospace,monospace;
 }
@@ -215,3 +219,26 @@ svg.chart{width:100%;height:auto;display:block}
   .card,.chart-card{border:0;padding:0;margin:0 0 14px}
   .charts{grid-template-columns:1fr 1fr}
 }
+
+
+/* ================= v5 增补：模型入口强化 / 表头对齐 / 提示条 ================= */
+.top-actions .btn.primary{
+  font-size:15px;padding:11px 22px;border-radius:10px;letter-spacing:.05em;
+  box-shadow:0 2px 0 rgba(21,47,41,.22);
+}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:7px 14px}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:#B9B2A4;display:block}
+.status.on::before{background:#3E7C62}
+.badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#FCFAF6;white-space:nowrap}
+.badge.on{color:var(--pine);border-color:#C9D8CF;background:var(--pine-l)}
+.notice{
+  border-left:3px solid var(--brass);background:var(--brass-l);color:#6B5527;
+  font-size:13.5px;line-height:1.7;padding:10px 14px;border-radius:0 8px 8px 0;margin:2px 0 8px;
+}
+th.num{text-align:right}
+th,td{vertical-align:middle}
+.ai-card .actions{margin-top:6px}
+
+
+/* v5：hidden 属性优先，避免被 display:flex 覆盖 */
+[hidden]{display:none!important}
