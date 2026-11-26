@@ -178,6 +178,7 @@
     var cand = groupCandidates();
     var prefer = cand.filter(function (c) { return /(班级|部门|地区|区域|城市|门店|渠道|类别|分组)/.test(c); })[0] || cand[0] || '';
     S.sel = {
+      mode: 'pro', focus: nums[0] || '', assoc: true,
       metrics: nums, group: prefer, metric: nums[0] || '', corr: nums.length >= 2, hist: nums[0] || ''
     };
     renderProfile();
@@ -209,6 +210,21 @@
   }
 
   /* ================= 第二步：变量选择 ================= */
+  function applyModeUI() {
+    var simple = S.sel.mode === 'simple';
+    $('#proVars').hidden = simple;
+    $('#simpleVars').hidden = !simple;
+    $('#metricField').hidden = simple;
+    $('#histField').hidden = simple;
+    $('#corrRow').hidden = simple;
+    $$('#modeSwitch button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-mode') === S.sel.mode);
+    });
+    $('#modeHint').textContent = simple
+      ? '只重点分析一个变量：描述统计只算它，分组比较用它，图表也聚焦它。'
+      : '按需选择变量，输出描述统计、组间比较、相关分析与四幅图。';
+  }
+
   function renderSelections() {
     var box = $('#numVars');
     box.innerHTML = '';
@@ -230,28 +246,59 @@
       box.appendChild(label);
     });
 
+    // 简单模式：主分析变量
+    if (S.prof.numeric.indexOf(S.sel.focus) < 0) S.sel.focus = S.prof.numeric[0] || '';
+    var fv = $('#focusVar');
+    fv.innerHTML = S.prof.numeric.map(function (c) {
+      return '<option value="' + esc(c) + '"' + (S.sel.focus === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+    fv.onchange = function () {
+      S.sel.focus = this.value;
+      S.sel.metric = this.value;
+      S.sel.hist = this.value;
+      renderPlan();
+    };
+    var as = $('#assocVar');
+    as.checked = !!S.sel.assoc;
+    as.onchange = function () { S.sel.assoc = this.checked; renderPlan(); };
+
+    $$('#modeSwitch button').forEach(function (b) {
+      b.onclick = function () {
+        S.sel.mode = b.getAttribute('data-mode');
+        applyModeUI();
+        renderPlan();
+      };
+    });
+
     var g = $('#groupVar');
     g.innerHTML = '<option value="">不分组</option>' + groupCandidates().map(function (c) {
       return '<option value="' + esc(c) + '"' + (S.sel.group === c ? ' selected' : '') + '>' + esc(c) + '</option>';
     }).join('');
     g.onchange = function () {
       S.sel.group = this.value;
-      if (!S.sel.group) S.sel.metric = S.sel.metrics[0] || '';
+      if (!S.sel.group && S.sel.mode === 'pro') S.sel.metric = S.sel.metrics[0] || '';
       syncSelectors();
       renderPlan();
     };
 
+    applyModeUI();
     syncSelectors();
   }
 
   function syncSelectors() {
     var metrics = S.sel.metrics;
-    if (S.sel.metric && metrics.indexOf(S.sel.metric) < 0) S.sel.metric = metrics[0] || '';
-    if (!S.sel.metric) S.sel.metric = metrics[0] || '';
-    if (S.sel.hist && metrics.indexOf(S.sel.hist) < 0) S.sel.hist = metrics[0] || '';
-    if (!S.sel.hist) S.sel.hist = metrics[0] || '';
-    if (metrics.length < 2) S.sel.corr = false;
-    else if ($('#doCorr').checked) S.sel.corr = true;
+    if (S.sel.mode === 'simple') {
+      if (S.prof.numeric.indexOf(S.sel.focus) < 0) S.sel.focus = S.prof.numeric[0] || '';
+      S.sel.metric = S.sel.focus;
+      S.sel.hist = S.sel.focus;
+    } else {
+      if (S.sel.metric && metrics.indexOf(S.sel.metric) < 0) S.sel.metric = metrics[0] || '';
+      if (!S.sel.metric) S.sel.metric = metrics[0] || '';
+      if (S.sel.hist && metrics.indexOf(S.sel.hist) < 0) S.sel.hist = metrics[0] || '';
+      if (!S.sel.hist) S.sel.hist = metrics[0] || '';
+      if (metrics.length < 2) S.sel.corr = false;
+      else if ($('#doCorr').checked) S.sel.corr = true;
+    }
 
     var gm = $('#groupMetric');
     gm.innerHTML = metrics.map(function (c) { return '<option value="' + esc(c) + '"' + (S.sel.metric === c ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
@@ -272,21 +319,40 @@
   }
 
   function buildPlan() {
-    var sel = S.sel, m = sel.metrics.slice();
-    var pairs = [];
+    var sel = S.sel;
+    if (sel.mode === 'simple') {
+      var f = sel.focus || S.prof.numeric[0] || '';
+      var pairs = [];
+      if (sel.assoc) {
+        S.prof.numeric.filter(function (x) { return x !== f; }).slice(0, 4).forEach(function (o) {
+          pairs.push([f, o]);
+        });
+      }
+      return {
+        source: S.planSource, mode: 'simple', focus: f, title: '单变量分析',
+        descriptives: [f], metrics: [f],
+        groupBy: sel.group || null,
+        groupCompare: sel.group ? { by: sel.group, metric: f } : null,
+        correlations: pairs,
+        histogram: { column: f, bins: 8 },
+        frequency: [], matrix: false
+      };
+    }
+    var m = sel.metrics.slice();
+    var pairs2 = [];
     if (sel.corr && m.length >= 2) {
-      for (var i = 0; i < m.length && pairs.length < 6; i++) {
-        for (var j = i + 1; j < m.length && pairs.length < 6; j++) pairs.push([m[i], m[j]]);
+      for (var i = 0; i < m.length && pairs2.length < 6; i++) {
+        for (var j = i + 1; j < m.length && pairs2.length < 6; j++) pairs2.push([m[i], m[j]]);
       }
     }
     return {
-      source: S.planSource,
+      source: S.planSource, mode: 'pro', focus: null,
       title: '统计分析',
       descriptives: m.slice(),
       metrics: m.slice(),
       groupBy: sel.group || null,
       groupCompare: sel.group ? { by: sel.group, metric: sel.metric } : null,
-      correlations: pairs,
+      correlations: pairs2,
       histogram: sel.hist ? { column: sel.hist, bins: 8 } : null,
       frequency: []
     };
@@ -295,6 +361,7 @@
   function renderPlan() {
     S.plan = buildPlan();
     var plan = S.plan, box = $('#planChips');
+    var simple = plan.mode === 'simple';
     box.innerHTML = '';
     function chip(label, val) {
       var d = document.createElement('div');
@@ -302,9 +369,10 @@
       d.innerHTML = '<b>' + esc(label) + '</b><span>' + esc(val) + '</span>';
       box.appendChild(d);
     }
-    chip('描述统计', (plan.descriptives || []).join('、') || '未选择');
+    chip(simple ? '主分析变量' : '描述统计', (plan.descriptives || []).join('、') || '未选择');
     chip('分组比较', plan.groupCompare ? plan.groupCompare.by + ' → ' + plan.groupCompare.metric : '不分组');
-    chip('相关分析', plan.correlations.length ? plan.correlations.length + ' 对（' + plan.descriptives.join(' × ') + '）' : '不执行');
+    chip(simple ? '对照相关' : '相关分析',
+      plan.correlations.length ? (simple ? plan.correlations.length + ' 对（与其他变量）' : plan.correlations.length + ' 对（' + plan.descriptives.join(' × ') + '）') : '不执行');
     chip('分布图', plan.histogram ? plan.histogram.column + '（' + plan.histogram.bins + ' 组）' : '不执行');
     $('#planSourceTag').textContent = S.planSource === 'ai' ? '模型推荐（已按界面设置）' : '按当前设置';
     $('#planPromptPreview').textContent = buildPrompt();
@@ -316,11 +384,27 @@
     var sample = S.clean.rows.slice(0, 4).map(function (r) {
       return S.headers.map(function (h) { return r[h]; });
     });
-    var base = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName, S.sel.metrics);
-    var cur = ['描述统计：' + (S.sel.metrics.join('、') || '无'),
-      '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + S.sel.metric) : '不分组'),
-      '相关分析：' + (S.sel.corr ? '所选变量两两相关' : '不执行'),
-      '分布图：' + (S.sel.hist || '无')].join('；');
+    var simple = S.sel.mode === 'simple';
+    var focus = simple ? (S.sel.focus || S.prof.numeric[0] || '') : null;
+    var pool;
+    if (simple) {
+      pool = [focus].concat(S.sel.assoc ? S.prof.numeric.filter(function (x) { return x !== focus; }) : []);
+    } else {
+      pool = S.sel.metrics.slice();
+    }
+    var base = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName, pool, focus);
+    var cur;
+    if (simple) {
+      cur = ['主分析变量：' + focus,
+        '其他变量：' + (S.sel.assoc ? '只作相关对照，不单独分析' : '不参与'),
+        '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + focus) : '不分组'),
+        '分布图：' + focus].join('；');
+    } else {
+      cur = ['描述统计：' + (S.sel.metrics.join('、') || '无'),
+        '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + S.sel.metric) : '不分组'),
+        '相关分析：' + (S.sel.corr ? '所选变量两两相关' : '不执行'),
+        '分布图：' + (S.sel.hist || '无')].join('；');
+    }
     return base + '\n\n【当前界面设置（可在此基础上调整）】\n' + cur;
   }
 
@@ -329,6 +413,20 @@
     if (!raw) { toast('未解析出 JSON'); $('#planWarn').textContent = '解析失败：未找到合法 JSON 对象。'; return false; }
     var v = StatEngine.validatePlan(raw, S.prof);
     var plan = v.plan;
+
+    // 简单模式：只接受一个主分析变量，其余变量仅作相关对照
+    if (S.sel.mode === 'simple') {
+      var cand = plan.descriptives.filter(function (c) { return S.prof.numeric.indexOf(c) >= 0; });
+      if (cand.length) S.sel.focus = cand[0];
+      S.sel.assoc = plan.correlations.length > 0;
+      S.sel.group = (plan.groupCompare && groupCandidates().indexOf(plan.groupCompare.by) >= 0) ? plan.groupCompare.by : '';
+      S.planSource = 'ai';
+      renderSelections();
+      renderPlan();
+      if (v.warnings.length) $('#planWarn').textContent = '已修正：' + v.warnings.join('；');
+      toast('已应用模型方案');
+      return true;
+    }
 
     // 把模型方案映射回界面设置，保证所见即所算
     var nums = S.prof.numeric;
@@ -354,7 +452,8 @@
 
   /* ================= 执行 ================= */
   function compute() {
-    if (!S.sel.metrics.length) { toast('请至少选择一个数值变量'); return; }
+    if (S.sel.mode === 'pro' && !S.sel.metrics.length) { toast('请至少选择一个数值变量'); return; }
+    if (S.sel.mode === 'simple' && !S.sel.focus) { toast('请选择主分析变量'); return; }
     S.plan = buildPlan();
     S.results = StatEngine.compute(S.plan, S.clean);
     renderResults();
@@ -363,9 +462,10 @@
 
   function renderResults() {
     var r = S.results;
-    $('#resultMeta').textContent = S.fileName + '　·　有效样本 ' + r.meta.n + '　·　统计变量 ' + r.descriptives.length +
+    var focusTxt = r.meta.focus ? ('主分析：' + r.meta.focus + '　·　') : '';
+    $('#resultMeta').textContent = S.fileName + '　·　' + focusTxt + '有效样本 ' + r.meta.n + '　·　统计变量 ' + r.descriptives.length +
       ' 个　·　' + (r.groups ? '分组：' + r.groups.by : '未分组') + '　·　' + (r.correlations.length ? '相关 ' + r.correlations.length + ' 对' : '未做相关');
-    $('#descHint').textContent = '变量 ' + r.descriptives.length + ' 个';
+    $('#descHint').textContent = r.meta.focus ? ('只统计 ' + r.meta.focus) : ('变量 ' + r.descriptives.length + ' 个');
 
     $('#descTable').innerHTML = '<thead><tr><th>变量</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">中位数</th><th class="num">最小</th><th class="num">最大</th><th class="num">变异系数</th><th class="num">偏度</th><th class="num">离群值</th></tr></thead><tbody>' +
       r.descriptives.map(function (d) {
@@ -576,52 +676,68 @@
   /* ================= 导出 ================= */
   function buildMarkdown() {
     var r = S.results, L = [];
-    L.push('# 统计分析结果');
+    var sep = '────────────────────────────';
+    L.push('统计分析结果');
+    L.push(sep);
+    L.push('数据文件：' + S.fileName);
+    L.push('有效样本：' + r.meta.n + '　统计变量：' + r.descriptives.length + ' 个' +
+      (r.meta.focus ? '　主分析：' + r.meta.focus : '') +
+      (r.groups ? '　分组：' + r.groups.by : '') +
+      (r.correlations.length ? '　相关：' + r.correlations.length + ' 对' : ''));
     L.push('');
-    L.push('> 数据文件：' + S.fileName + '　｜　有效样本：' + r.meta.n + '　｜　统计变量：' + r.descriptives.length + ' 个');
+
+    L.push('【基本信息】');
+    L.push('变量范围：' + r.descriptives.map(function (d) { return d.column; }).join('、'));
+    L.push('缺失处理：按变量剔除，不作插补');
+    if (r.groups) L.push('分组变量：' + r.groups.by + '（' + r.groups.rows.length + ' 组）');
     L.push('');
-    L.push('## 一、描述统计');
-    L.push('');
-    L.push('| 变量 | n | 均值 | 标准差 | 中位数 | 最小 | 最大 | 变异系数 | 偏度 | 离群值 |');
-    L.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+
+    L.push('【方差与离散程度】');
     r.descriptives.forEach(function (d) {
-      L.push('| ' + d.column + ' | ' + d.n + ' | ' + fmt(d.mean, 2) + ' | ' + fmt(d.sd, 2) + ' | ' + fmt(d.median, 2) +
-        ' | ' + fmt(d.min, 1) + ' | ' + fmt(d.max, 1) + ' | ' + fmt(d.cv, 3) + ' | ' + fmt(d.skew, 2) + ' | ' + d.outliers + ' |');
+      var v = (d.variance != null) ? d.variance : d.sd * d.sd;
+      L.push(d.column + '：方差 ' + fmt(v, 2) + '，标准差 ' + fmt(d.sd, 2) + '，变异系数 ' + fmt(d.cv, 3));
     });
     L.push('');
+
+    L.push('【均值与位置】');
+    r.descriptives.forEach(function (d) {
+      L.push(d.column + '：均值 ' + fmt(d.mean, 2) + '，中位数 ' + fmt(d.median, 2) +
+        '，最小值 ' + fmt(d.min, 1) + '，最大值 ' + fmt(d.max, 1) +
+        '，偏度 ' + fmt(d.skew, 2) + '，离群值 ' + d.outliers + ' 个');
+    });
+    L.push('');
+
     if (r.correlations.length) {
-      L.push('## 二、相关分析');
-      L.push('');
-      L.push('| 变量 A | 变量 B | Pearson r | n | 显著性 |');
-      L.push('| --- | --- | --- | --- | --- |');
-      r.correlations.forEach(function (c) { L.push('| ' + c.a + ' | ' + c.b + ' | ' + fmt(c.r, 3) + ' | ' + c.n + ' | ' + (c.significant ? '显著' : '不显著') + ' |'); });
-      L.push('');
+      L.push('【相关系数】');
+      r.correlations.forEach(function (c) {
+        L.push(c.a + ' × ' + c.b + '：r = ' + fmt(c.r, 3) + '（n = ' + c.n + '，' + (c.significant ? '显著' : '不显著') + '）');
+      });
       L.push('注：相关关系不等同于因果关系。');
       L.push('');
     }
+
     if (r.groups) {
-      L.push('## 三、分组统计（' + r.groups.by + ' × ' + r.groups.metric + '）');
-      L.push('');
-      L.push('| 组别 | n | 均值 | 标准差 |');
-      L.push('| --- | --- | --- | --- |');
-      r.groups.rows.forEach(function (g) { L.push('| ' + g.group + ' | ' + g.n + ' | ' + fmt(g.mean, 2) + ' | ' + fmt(g.sd, 2) + ' |'); });
-      L.push('');
+      L.push('【分组均值】');
+      r.groups.rows.forEach(function (g) {
+        L.push(g.group + '：' + fmt(g.mean, 2) + '（n = ' + g.n + '，标准差 ' + fmt(g.sd, 2) + '）');
+      });
       L.push('组间均值差 ' + fmt(r.groups.spread, 2) + (r.groups.effect != null ? '，效应量 d = ' + fmt(r.groups.effect, 2) : '') + '。');
       L.push('');
     }
+
     if (S.advice) {
-      L.push('## 四、模型建议');
-      L.push('');
+      L.push('【模型建议】');
       L.push(S.advice);
       L.push('');
     }
-    L.push('---');
+
+    L.push(sep);
     L.push('口径说明：样本方差取 n−1；缺失值按变量剔除；离群值按 1.5×IQR 判定并仅作标记；相关系数为 Pearson r；组间比较采用效应量 d。');
     return L.join('\n');
   }
 
-  function download(name, text) {
-    var blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  function download(name, text, mime) {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = name;
@@ -706,7 +822,9 @@
       } finally { btn.disabled = false; btn.textContent = '生成建议'; }
     });
 
-    $('#exportMd').addEventListener('click', function () { download('统计分析结果.md', buildMarkdown()); });
+    $('#exportMd').addEventListener('click', function () {
+      download('统计分析结果.txt', buildMarkdown(), 'text/plain;charset=utf-8');
+    });
     $('#restart').addEventListener('click', function () {
       S = { fileName: '', headers: [], rows: [], prof: null, clean: null, sel: { metrics: [], group: '', metric: '', corr: true, hist: '' }, plan: null, planSource: 'user', results: null, advice: '' };
       goto(1);
@@ -743,9 +861,18 @@
           var t = StatEngine.parseCSV(s.text);
           S.fileName = s.name + '.csv';
           start(t.headers, t.rows);
+          var m = qp.get('mode');
+          if (m === 'simple' || m === 'pro') {
+            S.sel.mode = m;
+            var f = qp.get('focus');
+            if (f && S.prof.numeric.indexOf(f) >= 0) S.sel.focus = f;
+            renderSelections();
+            renderPlan();
+          }
           if (step >= 3) setTimeout(compute, 160);
         }, 120);
       }
+      if (qp.get('settings') === '1') setTimeout(function () { $('#settingsModal').hidden = false; }, 260);
     } catch (e) { }
   });
 })();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 经管数据统计分析 v5.0 单文件版 -->
+<!-- 经管数据统计分析 v6.0 单文件版 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -251,32 +251,26 @@ th,td{vertical-align:middle}
 /* v5：hidden 属性优先，避免被 display:flex 覆盖 */
 [hidden]{display:none!important}
 
-</style>
-<style id="theme-override">
-:root{
-  --paper:#F5F7FA;
-  --surface:#FFFFFF;
-  --ink:#182430;
-  --ink-2:#33414F;
-  --muted:#5F6B78;
-  --pine:#14365C;
-  --pine-d:#0C2743;
-  --pine-l:#E8EEF6;
-  --brass:#B08D57;
-  --brass-d:#8E6E3E;
-  --brass-l:#F3ECDD;
-  --clay:#A2453C;
-  --clay-l:#F8E9E7;
-  --sage:#5C6B7A;
-  --line:#DCE3EC;
-  --line-2:#EEF2F7;
-  --chart-1:#2F5687;
-  --chart-2:#B08D57;
-  --chart-3:#A2453C;
-  --chart-4:#7C8A99;
+
+/* ================= v6：模式切换 / 单变量选择 / 接入向导 ================= */
+.mode-switch{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:2px 0 8px;background:#FCFAF6}
+.mode-switch button{
+  border:0;background:transparent;padding:7px 16px;font-size:13.5px;color:var(--muted);
+  cursor:pointer;font-family:inherit;letter-spacing:.03em;
 }
-body{background:var(--paper);color:var(--ink)}
-h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{font-family:"Songti SC","STSong","SimSun",serif;}
+.mode-switch button + button{border-left:1px solid var(--line)}
+.mode-switch button.on{background:var(--pine);color:#F6F2E8;font-weight:600}
+.mode-hint{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+.wide-select{
+  width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:14.5px;
+  background:#FCFAF6;color:var(--ink);font-family:inherit;
+}
+.wide-select:focus{outline:2px solid #D8E2DB;border-color:var(--pine)}
+.guide{margin:6px 0 4px;border-top:1px dashed var(--line);padding-top:8px}
+.guide summary{cursor:pointer;font-size:13px;color:var(--pine);font-weight:600;padding:3px 0}
+.guide ol{margin:6px 0 4px;padding-left:20px;font-size:13px;line-height:1.85;color:var(--ink-2)}
+.guide code{font-family:Consolas,monospace;font-size:12.5px;background:var(--brass-l);padding:1px 5px;border-radius:4px;color:#6B5527}
+
 </style>
 </head>
 <body>
@@ -309,7 +303,7 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
           <h2>导入数据</h2>
           <span class="hint">.xlsx / .csv　·　首行为变量名</span>
         </div>
-        <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
+        <p class="lead">仅支持 <b>.xlsx</b> 与 <b>.csv</b> 两种格式；<b>首行必须是变量名</b>（如：学号、姓名、成绩），系统按首行识别变量。</p>
 
         <div class="dropzone" id="dropzone">
           <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
@@ -319,7 +313,8 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
           <button class="btn small" id="pickBtn" type="button">选择文件</button>
         </div>
 
-        <p class="fineprint">统计量与图形由程序计算，可复现、可核对；模型仅提供方案建议与文字解读，不参与数值计算。</p>
+        <p class="fineprint"><b>统计口径</b>：样本方差取 n−1；缺失值按变量剔除、不作插补；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。</p>
+        <p class="fineprint"><b>关于模型</b>：未接入模型时，本系统只做数据处理与统计计算，不生成任何分析结论或建议；接入后才提供方案推荐与文字解读，且不参与数值计算。</p>
       </div>
 
       <div class="card sample-card">
@@ -340,7 +335,6 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
         <h2>分析计划</h2>
         <p class="muted" id="fileMeta">—</p>
       </div>
-      <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
     <!-- 第一行：变量清单 | 分析设置 -->
@@ -360,24 +354,36 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
           <span class="hint">自行选择参与分析的变量</span>
         </div>
 
-        <div class="field-block">
+        <div class="mode-switch" id="modeSwitch">
+          <button type="button" data-mode="pro" class="on">专业模式</button>
+          <button type="button" data-mode="simple">简单模式</button>
+        </div>
+        <p class="mode-hint" id="modeHint">按需选择变量，输出描述统计、组间比较、相关分析与四幅图。</p>
+
+        <div class="field-block" id="proVars">
           <div class="field-label">数值变量 <span>不参与分析的变量不会被统计</span></div>
           <div id="numVars" class="var-chips"></div>
+        </div>
+
+        <div class="field-block" id="simpleVars" hidden>
+          <div class="field-label">主分析变量 <span>只重点分析这一个，其他变量仅在需要时作对照</span></div>
+          <select id="focusVar" class="wide-select"></select>
+          <label class="check-row"><input type="checkbox" id="assocVar" checked /><span>同时看它与其他数值变量的相关</span></label>
         </div>
 
         <div class="field-row">
           <label class="field"><span>分组变量</span>
             <select id="groupVar"></select>
           </label>
-          <label class="field"><span>分组比较指标</span>
+          <label class="field" id="metricField"><span>分组比较指标</span>
             <select id="groupMetric"></select>
           </label>
-          <label class="field"><span>分布图变量</span>
+          <label class="field" id="histField"><span>分布图变量</span>
             <select id="histVar"></select>
           </label>
         </div>
 
-        <label class="check-row">
+        <label class="check-row" id="corrRow">
           <input type="checkbox" id="doCorr" checked />
           <span>计算相关系数（对所选变量两两求 Pearson r）</span>
         </label>
@@ -422,7 +428,6 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
       </div>
       <div class="actions">
         <button class="btn ghost small" id="exportMd">导出结果</button>
-        <button class="btn ghost small" data-goto="2">返回计划</button>
       </div>
     </div>
 
@@ -471,7 +476,7 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
+  本页所有统计量由程序计算，可复现、可核对；统计口径与模型说明见“导入数据”页。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
@@ -486,6 +491,16 @@ h1,h2,h3,h4,.brand-text h1,.card-head h2,.card-head h3,.chart-title,.step-title{
     <label class="field"><span>模型名称</span><input type="text" id="apiModel" placeholder="deepseek-chat" /></label>
     <label class="field"><span>API Key</span><input type="password" id="apiKey" placeholder="sk-..." /></label>
     <p class="fineprint" id="apiHint"></p>
+    <details class="guide">
+      <summary>怎么接入：四步（第一次配置看这里）</summary>
+      <ol>
+        <li>打开 <b>platform.deepseek.com</b>，登录后进入「API keys」，创建一个密钥并复制（<code>sk-</code> 开头，只显示一次）。</li>
+        <li>接口地址填 <code>https://api.deepseek.com/v1</code>；模型名称填 <code>deepseek-chat</code>；把密钥粘贴到第三行。</li>
+        <li>先点「测试连接」。看到「连接正常，返回：OK」再点「保存」，右上角会变成「已接入模型」。</li>
+        <li>回到第二步点「模型推荐方案」，第三步点「生成建议」。若报跨域（Failed to fetch），改用「复制提示词」通道，效果一致。</li>
+      </ol>
+      <p class="fineprint">密钥只保存在本机浏览器；提交或换电脑前请在设置里清空。测试时不要输入真实姓名、身份证号等个人信息。</p>
+    </details>
     <div class="actions right">
       <button class="btn ghost small" id="testApi">测试连接</button>
       <button class="btn small" id="saveSettings">保存</button>
@@ -1009,7 +1024,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
   function compute(plan, cleanTable) {
     var recs = cleanTable.rows;
-    var results = { descriptives: [], groups: null, correlations: [], histogram: null, frequency: [], meta: { n: recs.length } };
+    var results = { descriptives: [], groups: null, correlations: [], histogram: null, frequency: [], meta: { n: recs.length, focus: plan.focus || null } };
 
     (plan.descriptives || []).forEach(function (c) {
       var d = describeColumn(recs, c);
@@ -1103,7 +1118,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
     // 相关系数矩阵（针对描述统计涉及的数值变量）
     var names = results.descriptives.map(function (d) { return d.column; });
-    if (names.length >= 2) {
+    if (names.length >= 2 && plan.matrix !== false) {
       var matrix = names.map(function (a) {
         return names.map(function (b) {
           if (a === b) return 1;
@@ -1200,7 +1215,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   }
 
   /* ---------------- 8. 给大模型的两段提示词 ---------------- */
-  function buildPlanPrompt(prof, sampleRows, fileName, pool) {
+  function buildPlanPrompt(prof, sampleRows, fileName, pool, focus) {
     var colLines = prof.columns.map(function (c) {
       return '- ' + c.name + '：' + (c.type === 'numeric' ? '数值型' : '类别型') +
         (c.idLike ? '（标识列，不要用于分组）' : '') +
@@ -1219,6 +1234,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       sample,
       '',
       (pool && pool.length ? '【用户已选定的分析变量】' + pool.join('、') + '（仅可从中选择，不得引入其他变量）' : ''),
+      (focus ? '【本次主分析变量】' + focus + '：方案与解释都要围绕它展开；其余变量只在相关分析中作为对照，不要单独分析或给建议。' : ''),
       '',
       '【可用的统计动作】（只能从这里选，不能自创）',
       '1) descriptives：对数值列做描述统计（均值、中位数、标准差、方差、最值、四分位、偏度、峰度、异常值）',
@@ -1243,7 +1259,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     ].join('\n');
   }
 
-  function buildAdvicePrompt(results, prof) {
+  function buildAdvicePrompt(results, prof, focus) {
     var live = results.descriptives.map(function (d) {
       return { 指标: d.column, 有效样本: d.n, 均值: d.mean, 中位数: d.median, 标准差: d.sd, 方差: d.variance, 最小值: d.min, 最大值: d.max, 变异系数: d.cv, 偏度: d.skew, 异常值个数: d.outliers };
     });
@@ -1257,6 +1273,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       JSON.stringify({ 描述统计: live, 分组比较: groups, 相关分析: cors }, null, 1),
       '',
       '【输出要求】',
+      (focus ? '0. 只围绕主分析变量「' + focus + '」给结论；其他变量只在相关关系中被提及，不要逐个点评。' : ''),
       '1. 先给一句总体结论（不超过 40 字）。',
       '2. 再给 3–5 条结论，每条按"【发现】—【依据】—【建议】"三段撰写，每条不超过 120 字。',
       '3. 每条"依据"必须引用上面的具体数字（如均值 71.2、CV 0.33、r = 0.62）。',
@@ -1478,6 +1495,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     var cand = groupCandidates();
     var prefer = cand.filter(function (c) { return /(班级|部门|地区|区域|城市|门店|渠道|类别|分组)/.test(c); })[0] || cand[0] || '';
     S.sel = {
+      mode: 'pro', focus: nums[0] || '', assoc: true,
       metrics: nums, group: prefer, metric: nums[0] || '', corr: nums.length >= 2, hist: nums[0] || ''
     };
     renderProfile();
@@ -1509,6 +1527,21 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   }
 
   /* ================= 第二步：变量选择 ================= */
+  function applyModeUI() {
+    var simple = S.sel.mode === 'simple';
+    $('#proVars').hidden = simple;
+    $('#simpleVars').hidden = !simple;
+    $('#metricField').hidden = simple;
+    $('#histField').hidden = simple;
+    $('#corrRow').hidden = simple;
+    $$('#modeSwitch button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-mode') === S.sel.mode);
+    });
+    $('#modeHint').textContent = simple
+      ? '只重点分析一个变量：描述统计只算它，分组比较用它，图表也聚焦它。'
+      : '按需选择变量，输出描述统计、组间比较、相关分析与四幅图。';
+  }
+
   function renderSelections() {
     var box = $('#numVars');
     box.innerHTML = '';
@@ -1530,28 +1563,59 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       box.appendChild(label);
     });
 
+    // 简单模式：主分析变量
+    if (S.prof.numeric.indexOf(S.sel.focus) < 0) S.sel.focus = S.prof.numeric[0] || '';
+    var fv = $('#focusVar');
+    fv.innerHTML = S.prof.numeric.map(function (c) {
+      return '<option value="' + esc(c) + '"' + (S.sel.focus === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+    fv.onchange = function () {
+      S.sel.focus = this.value;
+      S.sel.metric = this.value;
+      S.sel.hist = this.value;
+      renderPlan();
+    };
+    var as = $('#assocVar');
+    as.checked = !!S.sel.assoc;
+    as.onchange = function () { S.sel.assoc = this.checked; renderPlan(); };
+
+    $$('#modeSwitch button').forEach(function (b) {
+      b.onclick = function () {
+        S.sel.mode = b.getAttribute('data-mode');
+        applyModeUI();
+        renderPlan();
+      };
+    });
+
     var g = $('#groupVar');
     g.innerHTML = '<option value="">不分组</option>' + groupCandidates().map(function (c) {
       return '<option value="' + esc(c) + '"' + (S.sel.group === c ? ' selected' : '') + '>' + esc(c) + '</option>';
     }).join('');
     g.onchange = function () {
       S.sel.group = this.value;
-      if (!S.sel.group) S.sel.metric = S.sel.metrics[0] || '';
+      if (!S.sel.group && S.sel.mode === 'pro') S.sel.metric = S.sel.metrics[0] || '';
       syncSelectors();
       renderPlan();
     };
 
+    applyModeUI();
     syncSelectors();
   }
 
   function syncSelectors() {
     var metrics = S.sel.metrics;
-    if (S.sel.metric && metrics.indexOf(S.sel.metric) < 0) S.sel.metric = metrics[0] || '';
-    if (!S.sel.metric) S.sel.metric = metrics[0] || '';
-    if (S.sel.hist && metrics.indexOf(S.sel.hist) < 0) S.sel.hist = metrics[0] || '';
-    if (!S.sel.hist) S.sel.hist = metrics[0] || '';
-    if (metrics.length < 2) S.sel.corr = false;
-    else if ($('#doCorr').checked) S.sel.corr = true;
+    if (S.sel.mode === 'simple') {
+      if (S.prof.numeric.indexOf(S.sel.focus) < 0) S.sel.focus = S.prof.numeric[0] || '';
+      S.sel.metric = S.sel.focus;
+      S.sel.hist = S.sel.focus;
+    } else {
+      if (S.sel.metric && metrics.indexOf(S.sel.metric) < 0) S.sel.metric = metrics[0] || '';
+      if (!S.sel.metric) S.sel.metric = metrics[0] || '';
+      if (S.sel.hist && metrics.indexOf(S.sel.hist) < 0) S.sel.hist = metrics[0] || '';
+      if (!S.sel.hist) S.sel.hist = metrics[0] || '';
+      if (metrics.length < 2) S.sel.corr = false;
+      else if ($('#doCorr').checked) S.sel.corr = true;
+    }
 
     var gm = $('#groupMetric');
     gm.innerHTML = metrics.map(function (c) { return '<option value="' + esc(c) + '"' + (S.sel.metric === c ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('');
@@ -1572,21 +1636,40 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   }
 
   function buildPlan() {
-    var sel = S.sel, m = sel.metrics.slice();
-    var pairs = [];
+    var sel = S.sel;
+    if (sel.mode === 'simple') {
+      var f = sel.focus || S.prof.numeric[0] || '';
+      var pairs = [];
+      if (sel.assoc) {
+        S.prof.numeric.filter(function (x) { return x !== f; }).slice(0, 4).forEach(function (o) {
+          pairs.push([f, o]);
+        });
+      }
+      return {
+        source: S.planSource, mode: 'simple', focus: f, title: '单变量分析',
+        descriptives: [f], metrics: [f],
+        groupBy: sel.group || null,
+        groupCompare: sel.group ? { by: sel.group, metric: f } : null,
+        correlations: pairs,
+        histogram: { column: f, bins: 8 },
+        frequency: [], matrix: false
+      };
+    }
+    var m = sel.metrics.slice();
+    var pairs2 = [];
     if (sel.corr && m.length >= 2) {
-      for (var i = 0; i < m.length && pairs.length < 6; i++) {
-        for (var j = i + 1; j < m.length && pairs.length < 6; j++) pairs.push([m[i], m[j]]);
+      for (var i = 0; i < m.length && pairs2.length < 6; i++) {
+        for (var j = i + 1; j < m.length && pairs2.length < 6; j++) pairs2.push([m[i], m[j]]);
       }
     }
     return {
-      source: S.planSource,
+      source: S.planSource, mode: 'pro', focus: null,
       title: '统计分析',
       descriptives: m.slice(),
       metrics: m.slice(),
       groupBy: sel.group || null,
       groupCompare: sel.group ? { by: sel.group, metric: sel.metric } : null,
-      correlations: pairs,
+      correlations: pairs2,
       histogram: sel.hist ? { column: sel.hist, bins: 8 } : null,
       frequency: []
     };
@@ -1595,6 +1678,7 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   function renderPlan() {
     S.plan = buildPlan();
     var plan = S.plan, box = $('#planChips');
+    var simple = plan.mode === 'simple';
     box.innerHTML = '';
     function chip(label, val) {
       var d = document.createElement('div');
@@ -1602,9 +1686,10 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       d.innerHTML = '<b>' + esc(label) + '</b><span>' + esc(val) + '</span>';
       box.appendChild(d);
     }
-    chip('描述统计', (plan.descriptives || []).join('、') || '未选择');
+    chip(simple ? '主分析变量' : '描述统计', (plan.descriptives || []).join('、') || '未选择');
     chip('分组比较', plan.groupCompare ? plan.groupCompare.by + ' → ' + plan.groupCompare.metric : '不分组');
-    chip('相关分析', plan.correlations.length ? plan.correlations.length + ' 对（' + plan.descriptives.join(' × ') + '）' : '不执行');
+    chip(simple ? '对照相关' : '相关分析',
+      plan.correlations.length ? (simple ? plan.correlations.length + ' 对（与其他变量）' : plan.correlations.length + ' 对（' + plan.descriptives.join(' × ') + '）') : '不执行');
     chip('分布图', plan.histogram ? plan.histogram.column + '（' + plan.histogram.bins + ' 组）' : '不执行');
     $('#planSourceTag').textContent = S.planSource === 'ai' ? '模型推荐（已按界面设置）' : '按当前设置';
     $('#planPromptPreview').textContent = buildPrompt();
@@ -1616,11 +1701,27 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     var sample = S.clean.rows.slice(0, 4).map(function (r) {
       return S.headers.map(function (h) { return r[h]; });
     });
-    var base = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName, S.sel.metrics);
-    var cur = ['描述统计：' + (S.sel.metrics.join('、') || '无'),
-      '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + S.sel.metric) : '不分组'),
-      '相关分析：' + (S.sel.corr ? '所选变量两两相关' : '不执行'),
-      '分布图：' + (S.sel.hist || '无')].join('；');
+    var simple = S.sel.mode === 'simple';
+    var focus = simple ? (S.sel.focus || S.prof.numeric[0] || '') : null;
+    var pool;
+    if (simple) {
+      pool = [focus].concat(S.sel.assoc ? S.prof.numeric.filter(function (x) { return x !== focus; }) : []);
+    } else {
+      pool = S.sel.metrics.slice();
+    }
+    var base = StatEngine.buildPlanPrompt(S.prof, sample, S.fileName, pool, focus);
+    var cur;
+    if (simple) {
+      cur = ['主分析变量：' + focus,
+        '其他变量：' + (S.sel.assoc ? '只作相关对照，不单独分析' : '不参与'),
+        '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + focus) : '不分组'),
+        '分布图：' + focus].join('；');
+    } else {
+      cur = ['描述统计：' + (S.sel.metrics.join('、') || '无'),
+        '分组比较：' + (S.sel.group ? (S.sel.group + ' → ' + S.sel.metric) : '不分组'),
+        '相关分析：' + (S.sel.corr ? '所选变量两两相关' : '不执行'),
+        '分布图：' + (S.sel.hist || '无')].join('；');
+    }
     return base + '\n\n【当前界面设置（可在此基础上调整）】\n' + cur;
   }
 
@@ -1629,6 +1730,20 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     if (!raw) { toast('未解析出 JSON'); $('#planWarn').textContent = '解析失败：未找到合法 JSON 对象。'; return false; }
     var v = StatEngine.validatePlan(raw, S.prof);
     var plan = v.plan;
+
+    // 简单模式：只接受一个主分析变量，其余变量仅作相关对照
+    if (S.sel.mode === 'simple') {
+      var cand = plan.descriptives.filter(function (c) { return S.prof.numeric.indexOf(c) >= 0; });
+      if (cand.length) S.sel.focus = cand[0];
+      S.sel.assoc = plan.correlations.length > 0;
+      S.sel.group = (plan.groupCompare && groupCandidates().indexOf(plan.groupCompare.by) >= 0) ? plan.groupCompare.by : '';
+      S.planSource = 'ai';
+      renderSelections();
+      renderPlan();
+      if (v.warnings.length) $('#planWarn').textContent = '已修正：' + v.warnings.join('；');
+      toast('已应用模型方案');
+      return true;
+    }
 
     // 把模型方案映射回界面设置，保证所见即所算
     var nums = S.prof.numeric;
@@ -1654,7 +1769,8 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
   /* ================= 执行 ================= */
   function compute() {
-    if (!S.sel.metrics.length) { toast('请至少选择一个数值变量'); return; }
+    if (S.sel.mode === 'pro' && !S.sel.metrics.length) { toast('请至少选择一个数值变量'); return; }
+    if (S.sel.mode === 'simple' && !S.sel.focus) { toast('请选择主分析变量'); return; }
     S.plan = buildPlan();
     S.results = StatEngine.compute(S.plan, S.clean);
     renderResults();
@@ -1663,9 +1779,10 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
 
   function renderResults() {
     var r = S.results;
-    $('#resultMeta').textContent = S.fileName + '　·　有效样本 ' + r.meta.n + '　·　统计变量 ' + r.descriptives.length +
+    var focusTxt = r.meta.focus ? ('主分析：' + r.meta.focus + '　·　') : '';
+    $('#resultMeta').textContent = S.fileName + '　·　' + focusTxt + '有效样本 ' + r.meta.n + '　·　统计变量 ' + r.descriptives.length +
       ' 个　·　' + (r.groups ? '分组：' + r.groups.by : '未分组') + '　·　' + (r.correlations.length ? '相关 ' + r.correlations.length + ' 对' : '未做相关');
-    $('#descHint').textContent = '变量 ' + r.descriptives.length + ' 个';
+    $('#descHint').textContent = r.meta.focus ? ('只统计 ' + r.meta.focus) : ('变量 ' + r.descriptives.length + ' 个');
 
     $('#descTable').innerHTML = '<thead><tr><th>变量</th><th class="num">n</th><th class="num">均值</th><th class="num">标准差</th><th class="num">中位数</th><th class="num">最小</th><th class="num">最大</th><th class="num">变异系数</th><th class="num">偏度</th><th class="num">离群值</th></tr></thead><tbody>' +
       r.descriptives.map(function (d) {
@@ -1876,52 +1993,68 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
   /* ================= 导出 ================= */
   function buildMarkdown() {
     var r = S.results, L = [];
-    L.push('# 统计分析结果');
+    var sep = '────────────────────────────';
+    L.push('统计分析结果');
+    L.push(sep);
+    L.push('数据文件：' + S.fileName);
+    L.push('有效样本：' + r.meta.n + '　统计变量：' + r.descriptives.length + ' 个' +
+      (r.meta.focus ? '　主分析：' + r.meta.focus : '') +
+      (r.groups ? '　分组：' + r.groups.by : '') +
+      (r.correlations.length ? '　相关：' + r.correlations.length + ' 对' : ''));
     L.push('');
-    L.push('> 数据文件：' + S.fileName + '　｜　有效样本：' + r.meta.n + '　｜　统计变量：' + r.descriptives.length + ' 个');
+
+    L.push('【基本信息】');
+    L.push('变量范围：' + r.descriptives.map(function (d) { return d.column; }).join('、'));
+    L.push('缺失处理：按变量剔除，不作插补');
+    if (r.groups) L.push('分组变量：' + r.groups.by + '（' + r.groups.rows.length + ' 组）');
     L.push('');
-    L.push('## 一、描述统计');
-    L.push('');
-    L.push('| 变量 | n | 均值 | 标准差 | 中位数 | 最小 | 最大 | 变异系数 | 偏度 | 离群值 |');
-    L.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+
+    L.push('【方差与离散程度】');
     r.descriptives.forEach(function (d) {
-      L.push('| ' + d.column + ' | ' + d.n + ' | ' + fmt(d.mean, 2) + ' | ' + fmt(d.sd, 2) + ' | ' + fmt(d.median, 2) +
-        ' | ' + fmt(d.min, 1) + ' | ' + fmt(d.max, 1) + ' | ' + fmt(d.cv, 3) + ' | ' + fmt(d.skew, 2) + ' | ' + d.outliers + ' |');
+      var v = (d.variance != null) ? d.variance : d.sd * d.sd;
+      L.push(d.column + '：方差 ' + fmt(v, 2) + '，标准差 ' + fmt(d.sd, 2) + '，变异系数 ' + fmt(d.cv, 3));
     });
     L.push('');
+
+    L.push('【均值与位置】');
+    r.descriptives.forEach(function (d) {
+      L.push(d.column + '：均值 ' + fmt(d.mean, 2) + '，中位数 ' + fmt(d.median, 2) +
+        '，最小值 ' + fmt(d.min, 1) + '，最大值 ' + fmt(d.max, 1) +
+        '，偏度 ' + fmt(d.skew, 2) + '，离群值 ' + d.outliers + ' 个');
+    });
+    L.push('');
+
     if (r.correlations.length) {
-      L.push('## 二、相关分析');
-      L.push('');
-      L.push('| 变量 A | 变量 B | Pearson r | n | 显著性 |');
-      L.push('| --- | --- | --- | --- | --- |');
-      r.correlations.forEach(function (c) { L.push('| ' + c.a + ' | ' + c.b + ' | ' + fmt(c.r, 3) + ' | ' + c.n + ' | ' + (c.significant ? '显著' : '不显著') + ' |'); });
-      L.push('');
+      L.push('【相关系数】');
+      r.correlations.forEach(function (c) {
+        L.push(c.a + ' × ' + c.b + '：r = ' + fmt(c.r, 3) + '（n = ' + c.n + '，' + (c.significant ? '显著' : '不显著') + '）');
+      });
       L.push('注：相关关系不等同于因果关系。');
       L.push('');
     }
+
     if (r.groups) {
-      L.push('## 三、分组统计（' + r.groups.by + ' × ' + r.groups.metric + '）');
-      L.push('');
-      L.push('| 组别 | n | 均值 | 标准差 |');
-      L.push('| --- | --- | --- | --- |');
-      r.groups.rows.forEach(function (g) { L.push('| ' + g.group + ' | ' + g.n + ' | ' + fmt(g.mean, 2) + ' | ' + fmt(g.sd, 2) + ' |'); });
-      L.push('');
+      L.push('【分组均值】');
+      r.groups.rows.forEach(function (g) {
+        L.push(g.group + '：' + fmt(g.mean, 2) + '（n = ' + g.n + '，标准差 ' + fmt(g.sd, 2) + '）');
+      });
       L.push('组间均值差 ' + fmt(r.groups.spread, 2) + (r.groups.effect != null ? '，效应量 d = ' + fmt(r.groups.effect, 2) : '') + '。');
       L.push('');
     }
+
     if (S.advice) {
-      L.push('## 四、模型建议');
-      L.push('');
+      L.push('【模型建议】');
       L.push(S.advice);
       L.push('');
     }
-    L.push('---');
+
+    L.push(sep);
     L.push('口径说明：样本方差取 n−1；缺失值按变量剔除；离群值按 1.5×IQR 判定并仅作标记；相关系数为 Pearson r；组间比较采用效应量 d。');
     return L.join('\n');
   }
 
-  function download(name, text) {
-    var blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  function download(name, text, mime) {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = name;
@@ -2006,7 +2139,9 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
       } finally { btn.disabled = false; btn.textContent = '生成建议'; }
     });
 
-    $('#exportMd').addEventListener('click', function () { download('统计分析结果.md', buildMarkdown()); });
+    $('#exportMd').addEventListener('click', function () {
+      download('统计分析结果.txt', buildMarkdown(), 'text/plain;charset=utf-8');
+    });
     $('#restart').addEventListener('click', function () {
       S = { fileName: '', headers: [], rows: [], prof: null, clean: null, sel: { metrics: [], group: '', metric: '', corr: true, hist: '' }, plan: null, planSource: 'user', results: null, advice: '' };
       goto(1);
@@ -2043,9 +2178,18 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
           var t = StatEngine.parseCSV(s.text);
           S.fileName = s.name + '.csv';
           start(t.headers, t.rows);
+          var m = qp.get('mode');
+          if (m === 'simple' || m === 'pro') {
+            S.sel.mode = m;
+            var f = qp.get('focus');
+            if (f && S.prof.numeric.indexOf(f) >= 0) S.sel.focus = f;
+            renderSelections();
+            renderPlan();
+          }
           if (step >= 3) setTimeout(compute, 160);
         }, 120);
       }
+      if (qp.get('settings') === '1') setTimeout(function () { $('#settingsModal').hidden = false; }, 260);
     } catch (e) { }
   });
 })();

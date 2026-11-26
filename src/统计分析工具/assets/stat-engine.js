@@ -340,7 +340,7 @@
 
   function compute(plan, cleanTable) {
     var recs = cleanTable.rows;
-    var results = { descriptives: [], groups: null, correlations: [], histogram: null, frequency: [], meta: { n: recs.length } };
+    var results = { descriptives: [], groups: null, correlations: [], histogram: null, frequency: [], meta: { n: recs.length, focus: plan.focus || null } };
 
     (plan.descriptives || []).forEach(function (c) {
       var d = describeColumn(recs, c);
@@ -434,7 +434,7 @@
 
     // 相关系数矩阵（针对描述统计涉及的数值变量）
     var names = results.descriptives.map(function (d) { return d.column; });
-    if (names.length >= 2) {
+    if (names.length >= 2 && plan.matrix !== false) {
       var matrix = names.map(function (a) {
         return names.map(function (b) {
           if (a === b) return 1;
@@ -531,7 +531,7 @@
   }
 
   /* ---------------- 8. 给大模型的两段提示词 ---------------- */
-  function buildPlanPrompt(prof, sampleRows, fileName, pool) {
+  function buildPlanPrompt(prof, sampleRows, fileName, pool, focus) {
     var colLines = prof.columns.map(function (c) {
       return '- ' + c.name + '：' + (c.type === 'numeric' ? '数值型' : '类别型') +
         (c.idLike ? '（标识列，不要用于分组）' : '') +
@@ -550,6 +550,7 @@
       sample,
       '',
       (pool && pool.length ? '【用户已选定的分析变量】' + pool.join('、') + '（仅可从中选择，不得引入其他变量）' : ''),
+      (focus ? '【本次主分析变量】' + focus + '：方案与解释都要围绕它展开；其余变量只在相关分析中作为对照，不要单独分析或给建议。' : ''),
       '',
       '【可用的统计动作】（只能从这里选，不能自创）',
       '1) descriptives：对数值列做描述统计（均值、中位数、标准差、方差、最值、四分位、偏度、峰度、异常值）',
@@ -574,7 +575,7 @@
     ].join('\n');
   }
 
-  function buildAdvicePrompt(results, prof) {
+  function buildAdvicePrompt(results, prof, focus) {
     var live = results.descriptives.map(function (d) {
       return { 指标: d.column, 有效样本: d.n, 均值: d.mean, 中位数: d.median, 标准差: d.sd, 方差: d.variance, 最小值: d.min, 最大值: d.max, 变异系数: d.cv, 偏度: d.skew, 异常值个数: d.outliers };
     });
@@ -588,6 +589,7 @@
       JSON.stringify({ 描述统计: live, 分组比较: groups, 相关分析: cors }, null, 1),
       '',
       '【输出要求】',
+      (focus ? '0. 只围绕主分析变量「' + focus + '」给结论；其他变量只在相关关系中被提及，不要逐个点评。' : ''),
       '1. 先给一句总体结论（不超过 40 字）。',
       '2. 再给 3–5 条结论，每条按"【发现】—【依据】—【建议】"三段撰写，每条不超过 120 字。',
       '3. 每条"依据"必须引用上面的具体数字（如均值 71.2、CV 0.33、r = 0.62）。',

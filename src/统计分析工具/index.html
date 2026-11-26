@@ -36,7 +36,7 @@
           <h2>导入数据</h2>
           <span class="hint">.xlsx / .csv　·　首行为变量名</span>
         </div>
-        <p class="lead">系统将对数据执行描述性统计、组间比较与相关分析。文件在浏览器本地解析，不上传服务器。</p>
+        <p class="lead">仅支持 <b>.xlsx</b> 与 <b>.csv</b> 两种格式；<b>首行必须是变量名</b>（如：学号、姓名、成绩），系统按首行识别变量。</p>
 
         <div class="dropzone" id="dropzone">
           <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
@@ -46,7 +46,8 @@
           <button class="btn small" id="pickBtn" type="button">选择文件</button>
         </div>
 
-        <p class="fineprint">统计量与图形由程序计算，可复现、可核对；模型仅提供方案建议与文字解读，不参与数值计算。</p>
+        <p class="fineprint"><b>统计口径</b>：样本方差取 n−1；缺失值按变量剔除、不作插补；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。</p>
+        <p class="fineprint"><b>关于模型</b>：未接入模型时，本系统只做数据处理与统计计算，不生成任何分析结论或建议；接入后才提供方案推荐与文字解读，且不参与数值计算。</p>
       </div>
 
       <div class="card sample-card">
@@ -67,7 +68,6 @@
         <h2>分析计划</h2>
         <p class="muted" id="fileMeta">—</p>
       </div>
-      <button class="btn ghost small" data-goto="1">重新选择</button>
     </div>
 
     <!-- 第一行：变量清单 | 分析设置 -->
@@ -87,24 +87,36 @@
           <span class="hint">自行选择参与分析的变量</span>
         </div>
 
-        <div class="field-block">
+        <div class="mode-switch" id="modeSwitch">
+          <button type="button" data-mode="pro" class="on">专业模式</button>
+          <button type="button" data-mode="simple">简单模式</button>
+        </div>
+        <p class="mode-hint" id="modeHint">按需选择变量，输出描述统计、组间比较、相关分析与四幅图。</p>
+
+        <div class="field-block" id="proVars">
           <div class="field-label">数值变量 <span>不参与分析的变量不会被统计</span></div>
           <div id="numVars" class="var-chips"></div>
+        </div>
+
+        <div class="field-block" id="simpleVars" hidden>
+          <div class="field-label">主分析变量 <span>只重点分析这一个，其他变量仅在需要时作对照</span></div>
+          <select id="focusVar" class="wide-select"></select>
+          <label class="check-row"><input type="checkbox" id="assocVar" checked /><span>同时看它与其他数值变量的相关</span></label>
         </div>
 
         <div class="field-row">
           <label class="field"><span>分组变量</span>
             <select id="groupVar"></select>
           </label>
-          <label class="field"><span>分组比较指标</span>
+          <label class="field" id="metricField"><span>分组比较指标</span>
             <select id="groupMetric"></select>
           </label>
-          <label class="field"><span>分布图变量</span>
+          <label class="field" id="histField"><span>分布图变量</span>
             <select id="histVar"></select>
           </label>
         </div>
 
-        <label class="check-row">
+        <label class="check-row" id="corrRow">
           <input type="checkbox" id="doCorr" checked />
           <span>计算相关系数（对所选变量两两求 Pearson r）</span>
         </label>
@@ -149,7 +161,6 @@
       </div>
       <div class="actions">
         <button class="btn ghost small" id="exportMd">导出结果</button>
-        <button class="btn ghost small" data-goto="2">返回计划</button>
       </div>
     </div>
 
@@ -198,7 +209,7 @@
 </main>
 
 <footer class="foot">
-  统计口径：样本方差取 n−1；缺失值按变量剔除并以有效样本量标注；离群值按 1.5×IQR 判定，仅标记不剔除；相关系数为 Pearson r；组间比较采用效应量 d。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
+  本页所有统计量由程序计算，可复现、可核对；统计口径与模型说明见“导入数据”页。未接入模型时不生成任何分析结论或建议，仅提供统计结果与图形。
 </footer>
 
 <!-- 模型设置 -->
@@ -213,6 +224,16 @@
     <label class="field"><span>模型名称</span><input type="text" id="apiModel" placeholder="deepseek-chat" /></label>
     <label class="field"><span>API Key</span><input type="password" id="apiKey" placeholder="sk-..." /></label>
     <p class="fineprint" id="apiHint"></p>
+    <details class="guide">
+      <summary>怎么接入：四步（第一次配置看这里）</summary>
+      <ol>
+        <li>打开 <b>platform.deepseek.com</b>，登录后进入「API keys」，创建一个密钥并复制（<code>sk-</code> 开头，只显示一次）。</li>
+        <li>接口地址填 <code>https://api.deepseek.com/v1</code>；模型名称填 <code>deepseek-chat</code>；把密钥粘贴到第三行。</li>
+        <li>先点「测试连接」。看到「连接正常，返回：OK」再点「保存」，右上角会变成「已接入模型」。</li>
+        <li>回到第二步点「模型推荐方案」，第三步点「生成建议」。若报跨域（Failed to fetch），改用「复制提示词」通道，效果一致。</li>
+      </ol>
+      <p class="fineprint">密钥只保存在本机浏览器；提交或换电脑前请在设置里清空。测试时不要输入真实姓名、身份证号等个人信息。</p>
+    </details>
     <div class="actions right">
       <button class="btn ghost small" id="testApi">测试连接</button>
       <button class="btn small" id="saveSettings">保存</button>
