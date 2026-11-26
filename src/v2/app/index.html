@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>统计分析助手 · 统计交给代码，分析交给大模型</title>
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">统</span>
+    <div><h1>统计分析助手 <small>v2.0</small></h1><p>经管数据 · 描述统计 · 分组比较 · 相关分析</p></div>
+  </div>
+  <div class="top-actions">
+    <button class="btn ghost small" id="settingsBtn">大模型设置</button>
+    <span class="pill" id="modePill">当前：规则版（未接大模型）</span>
+  </div>
+</header>
+
+<main>
+  <ol class="steps">
+    <li class="active" data-step="1"><b>1</b><span>上传 Excel</span></li>
+    <li data-step="2"><b>2</b><span>大模型定计划</span></li>
+    <li data-step="3"><b>3</b><span>结果与建议</span></li>
+  </ol>
+
+  <!-- ================= 步骤 1 ================= -->
+  <section class="panel" data-panel="1">
+    <div class="hero">
+      <div>
+        <h2>上传一张表，先让大模型决定"要看什么"</h2>
+        <p>流程只有三步：<b>① 大模型读结构、决定算哪些指标 → ② 代码把数字算准 → ③ 大模型依据结果写建议。</b>数字永远由代码算，大模型只做"定计划"和"写分析"。</p>
+        <ul class="pills">
+          <li>Excel / CSV</li><li>描述统计</li><li>分组比较</li><li>相关分析</li><li>自动异常提示</li>
+        </ul>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".xlsx,.csv" hidden />
+        <div class="dz-icon">＋</div>
+        <p class="dz-title">点击选择文件，或拖到这里</p>
+        <p class="dz-sub">支持 .xlsx / .csv　·　第一行是表头</p>
+        <button class="btn ghost small" id="pickBtn" type="button">选择文件</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>没有数据？用内置的 5 份测试数据</h3>
+        <p class="muted tiny">都是教学/经管场景的模拟数据，含干净数据、脏数据、小样本。</p>
+        <div id="sampleList" class="sample-list"></div>
+      </div>
+      <div class="card">
+        <h3>这一版做了什么</h3>
+        <ul class="plain">
+          <li><b>纯统计</b>：均值、中位数、标准差、方差、最值、四分位、偏度、峰度、异常值</li>
+          <li><b>分组比较</b>：按班级/部门/地区分组，比较组间差异（含效应量 d）</li>
+          <li><b>相关分析</b>：两两数值列的 Pearson r，提示"相关不等于因果"</li>
+          <li><b>两窗口</b>：左侧"统计结果"，右侧"业务建议"</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 步骤 2 ================= -->
+  <section class="panel" data-panel="2" hidden>
+    <div class="panel-head">
+      <div><h2>第二步：让大模型决定算哪些指标</h2><p class="muted" id="fileMeta">—</p></div>
+      <div class="actions"><button class="btn ghost small" data-goto="1">重新选择</button></div>
+    </div>
+
+    <div class="card">
+      <h3>数据画像（代码识别，不是大模型猜的）</h3>
+      <div class="table-wrap"><table id="profileTable"></table></div>
+      <p class="muted tiny" id="cleanNote"></p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>① 复制提示词给大模型</h3>
+        <p class="muted tiny">提示词里已经写好了列的清单和"只能从这 5 个动作里选"的约束，防止它乱编。</p>
+        <div class="actions">
+          <button class="btn small" id="copyPlanPrompt">复制规划提示词</button>
+          <button class="btn ghost small" id="runPlanAI" hidden>直接调用大模型</button>
+        </div>
+        <pre class="prompt-preview" id="planPromptPreview"></pre>
+      </div>
+      <div class="card">
+        <h3>② 把大模型的回复粘回来</h3>
+        <p class="muted tiny">回复里只保留 JSON 即可，多出来的解释文字会被自动忽略。</p>
+        <textarea id="planInput" rows="7" placeholder='把大模型返回的 JSON 粘贴到这里，例如：
+{"title":"高一数学成绩分析","groupBy":"班级","descriptives":["数学","语文"],...}'></textarea>
+        <div class="actions">
+          <button class="btn small" id="applyPlan">解析并应用</button>
+          <button class="btn ghost small" id="useDefault">用默认计划（不接大模型）</button>
+        </div>
+        <p class="warn" id="planWarn"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>当前要执行的统计计划</h3>
+      <div class="chips" id="planChips"></div>
+      <p class="muted tiny">计划里只会出现"真实存在的列"和"允许的动作"，其余一律被丢弃（这叫白名单校验）。</p>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn ghost" data-goto="1">上一步</button>
+      <button class="btn primary" id="computeBtn">开始计算</button>
+    </div>
+  </section>
+
+  <!-- ================= 步骤 3 ================= -->
+  <section class="panel" data-panel="3" hidden>
+    <div class="panel-head">
+      <div><h2>第三步：看结果、看建议</h2><p class="muted" id="resultMeta">—</p></div>
+      <div class="actions">
+        <button class="btn ghost small" id="exportMd">导出报告</button>
+        <button class="btn ghost small" data-goto="2">返回计划</button>
+      </div>
+    </div>
+
+    <div class="windows">
+      <!-- 左窗：统计结果 -->
+      <div class="win">
+        <div class="win-head"><b>窗口 A · 统计结果</b><span class="tag">全部由代码计算</span></div>
+        <div class="win-body">
+          <h4>描述统计</h4>
+          <div class="table-wrap"><table id="descTable"></table></div>
+
+          <h4 id="groupTitle" hidden>分组比较</h4>
+          <div class="table-wrap" id="groupWrap" hidden><table id="groupTable"></table></div>
+          <p class="note" id="groupNote" hidden></p>
+
+          <h4 id="corrTitle" hidden>相关分析</h4>
+          <div class="table-wrap" id="corrWrap" hidden><table id="corrTable"></table></div>
+
+          <h4 id="histTitle" hidden>分布直方图</h4>
+          <div id="histWrap" class="chart-box" hidden></div>
+
+          <h4 id="freqTitle" hidden>频数分布</h4>
+          <div class="table-wrap" id="freqWrap" hidden><table id="freqTable"></table></div>
+        </div>
+      </div>
+
+      <!-- 右窗：建议 -->
+      <div class="win">
+        <div class="win-head"><b>窗口 B · 分析建议</b><span class="tag">规则提示 + 大模型解读</span></div>
+        <div class="win-body">
+          <h4>统计提示（规则版，必然有）</h4>
+          <div id="insightList" class="insights"></div>
+
+          <h4>大模型解读（可选）</h4>
+          <p class="muted tiny">大模型只拿到上面算好的数字，不允许自己算。没填 API Key 时，用"复制提示词"粘到任意大模型即可。</p>
+          <div class="actions">
+            <button class="btn small" id="copyAdvicePrompt">复制建议提示词</button>
+            <button class="btn ghost small" id="runAdviceAI" hidden>直接调用大模型</button>
+          </div>
+          <textarea id="adviceInput" rows="6" placeholder="把大模型写好的建议粘贴到这里，会显示在下方（也可以直接点“直接调用大模型”）"></textarea>
+          <div class="actions"><button class="btn ghost small" id="applyAdvice">显示粘贴的建议</button></div>
+          <div class="ai-advice" id="aiAdvice"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn ghost" data-goto="2">返回计划</button>
+      <button class="btn primary" id="restart">换一份数据</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>样本方差用 n−1；缺失值按列剔除（各列样本量分别标注）；相关系数附样本量，相关不等于因果。</span>
+</footer>
+
+<!-- 大模型设置弹窗 -->
+<div class="modal" id="settingsModal" hidden>
+  <div class="modal-box">
+    <h3>大模型设置（可选）</h3>
+    <p class="muted tiny">不填也能用：页面会生成提示词，你复制到任意大模型网页，再把结果粘回来。Key 只保存在本机浏览器，不会上传。</p>
+    <label class="field"><span>接口地址（OpenAI 兼容）</span>
+      <input type="text" id="apiBase" placeholder="https://api.deepseek.com/v1" />
+    </label>
+    <label class="field"><span>模型名</span>
+      <input type="text" id="apiModel" placeholder="deepseek-chat" />
+    </label>
+    <label class="field"><span>API Key</span>
+      <input type="password" id="apiKey" placeholder="sk-..." />
+    </label>
+    <p class="warn" id="apiHint"></p>
+    <div class="actions right">
+      <button class="btn ghost small" id="closeSettings">关闭</button>
+      <button class="btn small" id="saveSettings">保存到本机</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/xlsx-lite.js"></script>
+<script src="assets/samples.js"></script>
+<script src="assets/stat-engine.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
