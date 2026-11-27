@@ -59,7 +59,8 @@
 
   /* ================= 模型设置 ================= */
   function loadCfg() {
-    try { var raw = localStorage.getItem('sl4_llm'); if (raw) CFG = JSON.parse(raw); } catch (e) { }
+    try { try { localStorage.removeItem('sl4_llm'); } catch (e) { }
+    var raw = sessionStorage.getItem('sl4_llm'); if (raw) CFG = JSON.parse(raw); } catch (e) { }
     $('#apiBase').value = CFG.base || '';
     $('#apiModel').value = CFG.model || '';
     $('#apiKey').value = CFG.key || '';
@@ -67,7 +68,7 @@
   }
   function saveCfg() {
     CFG = { base: $('#apiBase').value.trim(), model: $('#apiModel').value.trim(), key: $('#apiKey').value.trim() };
-    try { localStorage.setItem('sl4_llm', JSON.stringify(CFG)); } catch (e) { }
+    try { sessionStorage.setItem('sl4_llm', JSON.stringify(CFG)); } catch (e) { }
     updateStatus(); toast('配置已保存至本机'); $('#settingsModal').hidden = true;
   }
   function configured() { return !!(CFG.base && CFG.key); }
