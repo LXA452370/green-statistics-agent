@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 经管数据统计分析 v6.0 单文件版 -->
+<!-- v6.0 单文件版 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -1407,16 +1407,17 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     if ($('#runPlanAI')) $('#runPlanAI').disabled = !on;
     if ($('#runAdviceAI')) $('#runAdviceAI').disabled = !on;
   }
-  function endpoint() {
-    var base = (CFG.base || '').replace(/\/+$/, '');
+  function endpoint(baseIn) {
+    var base = (baseIn || CFG.base || '').replace(/\/+$/, '');
     return /\/chat\/completions$/.test(base) ? base : base + '/chat/completions';
   }
-  async function callLLM(prompt, temperature) {
-    var res = await fetch(endpoint(), {
+  async function callLLM(prompt, temperature, cfgIn) {
+    var cfg = cfgIn || CFG;
+    var res = await fetch(endpoint(cfg.base), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CFG.key },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
       body: JSON.stringify({
-        model: CFG.model || 'deepseek-chat',
+        model: cfg.model || 'deepseek-chat',
         temperature: temperature == null ? 0.2 : temperature,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1432,13 +1433,18 @@ window.SL_SAMPLES = [{"name": "学生成绩_干净", "desc": "60 行 · 3 个班
     return txt;
   }
   async function testConnection() {
-    if (!configured()) { $('#apiHint').textContent = '请先填写接口地址与 API Key。'; return; }
     var hint = $('#apiHint');
+    var cur = {
+      base: $('#apiBase').value.trim(),
+      model: $('#apiModel').value.trim(),
+      key: $('#apiKey').value.trim()
+    };
+    if (!cur.base || !cur.key) { hint.textContent = '请先填写接口地址与 API Key。'; return; }
     hint.textContent = '正在测试连接…';
     try {
-      var txt = await callLLM('仅回复"OK"两个字母。', 0);
-      hint.textContent = '连接正常，返回：' + txt.slice(0, 20);
-      toast('连接正常');
+      var txt = await callLLM('仅回复"OK"两个字母。', 0, cur);
+      hint.textContent = '连接正常，返回：' + txt.slice(0, 20) + '。点“保存”后生效。';
+      toast('连接正常，记得保存');
     } catch (e) {
       hint.textContent = '连接失败：' + e.message + '。若提示跨域，请改用“复制提示词”。';
       toast('连接失败，请查看提示');
